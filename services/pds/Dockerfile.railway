@@ -68,7 +68,7 @@ WORKDIR services/pds
 # Uses assets from build stage to reduce build size
 FROM node:20.11-alpine3.18
 
-RUN apk add --update dumb-init
+RUN apk add --update dumb-init su-exec
 
 # Avoid zombie processes, handle signal forwarding
 ENTRYPOINT ["dumb-init", "--"]
@@ -79,8 +79,6 @@ COPY --from=build /app /app
 # Copy PDS UI dist to a known location
 RUN mkdir -p /app/admin-ui && cp -r /app/packages/pds-ui/dist/* /app/admin-ui/ 2>/dev/null || true
 
-RUN mkdir -p /app/data && chown node /app/data
-
 EXPOSE 3000
 ENV PDS_PORT=3000
 ENV NODE_ENV=production
@@ -88,9 +86,8 @@ ENV PDS_ADMIN_UI_PATH=/app/admin-ui
 # potential perf issues w/ io_uring on this version of node
 ENV UV_USE_IO_URING=0
 
-# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#non-root-user
-USER node
-CMD ["node", "--heapsnapshot-signal=SIGUSR2", "--enable-source-maps", "--require=./tracer.js", "index.js"]
+# Run as root to ensure data directory permissions, then drop to node
+CMD ["sh", "-c", "mkdir -p /app/data/blocks && chown -R node:node /app/data && exec su-exec node node --heapsnapshot-signal=SIGUSR2 --enable-source-maps --require=./tracer.js index.js"]
 
 LABEL org.opencontainers.image.source=https://github.com/bluesky-social/atproto
 LABEL org.opencontainers.image.description="ATP Personal Data Server (PDS)"
