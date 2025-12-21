@@ -1,6 +1,6 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "services/pds/Dockerfile"
+dockerfilePath = "/services/pds/Dockerfile.railway"
 
 [deploy]
 healthcheckPath = "/xrpc/_health"
