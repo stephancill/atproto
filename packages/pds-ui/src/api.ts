@@ -44,7 +44,12 @@ export async function xrpc<T>(
     )
   }
 
-  return response.json()
+  // Handle empty responses (some endpoints don't return JSON)
+  const text = await response.text()
+  if (!text) {
+    return {} as T
+  }
+  return JSON.parse(text)
 }
 
 // Helper to create Basic auth header
@@ -131,6 +136,13 @@ export const api = {
     xrpc<{ sent: boolean }>('com.atproto.admin.sendEmailConfirmation', {
       method: 'POST',
       body: { did },
+      auth,
+    }),
+
+  disableInviteCodes: (auth: string, codes: string[]) =>
+    xrpc<void>('com.atproto.admin.disableInviteCodes', {
+      method: 'POST',
+      body: { codes },
       auth,
     }),
 }

@@ -11,6 +11,7 @@ import {
 	MailCheck,
 	AlertTriangle,
 	Send,
+	Trash2,
 } from "lucide-react";
 import {
 	api,
@@ -42,6 +43,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 
 function App() {
 	const queryClient = useQueryClient();
@@ -55,6 +64,11 @@ function App() {
 	const [newPassword, setNewPassword] = useState("");
 	const [newInviteCode, setNewInviteCode] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
+
+	// Confirmation modal state
+	const [confirmDeleteCode, setConfirmDeleteCode] = useState<string | null>(
+		null,
+	);
 
 	const auth = basicAuth(adminPassword);
 
@@ -120,6 +134,16 @@ function App() {
 		},
 	});
 
+	// Disable invite code mutation
+	const disableInviteMutation = useMutation({
+		mutationFn: (code: string) => api.disableInviteCodes(auth, [code]),
+		onSuccess: () => {
+			setSuccessMessage("Invite code disabled");
+			setConfirmDeleteCode(null);
+			queryClient.invalidateQueries({ queryKey: ["inviteCodes"] });
+		},
+	});
+
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsAuthenticated(true);
@@ -162,7 +186,10 @@ function App() {
 			: createAccountMutation.error?.message) ||
 		(sendEmailConfirmationMutation.error instanceof ApiError
 			? sendEmailConfirmationMutation.error.message
-			: sendEmailConfirmationMutation.error?.message);
+			: sendEmailConfirmationMutation.error?.message) ||
+		(disableInviteMutation.error instanceof ApiError
+			? disableInviteMutation.error.message
+			: disableInviteMutation.error?.message);
 
 	if (!isAuthenticated) {
 		return (
@@ -291,13 +318,14 @@ function App() {
 											<TableHead className="hidden sm:table-cell">
 												Created
 											</TableHead>
+											<TableHead className="w-[50px]"></TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
 										{inviteCodesQuery.isLoading ? (
 											<TableRow>
 												<TableCell
-													colSpan={4}
+													colSpan={5}
 													className="text-center py-8 text-muted-foreground"
 												>
 													<Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
@@ -307,7 +335,7 @@ function App() {
 										) : inviteCodes.length === 0 ? (
 											<TableRow>
 												<TableCell
-													colSpan={4}
+													colSpan={5}
 													className="text-center py-8 text-muted-foreground"
 												>
 													No invite codes yet
@@ -351,6 +379,21 @@ function App() {
 													</TableCell>
 													<TableCell className="text-muted-foreground hidden sm:table-cell">
 														{new Date(code.createdAt).toLocaleDateString()}
+													</TableCell>
+													<TableCell>
+														{!code.disabled && (
+															<Button
+																variant="ghost"
+																size="icon-sm"
+																title="Disable invite code"
+																onClick={() => {
+																	setSuccessMessage("");
+																	setConfirmDeleteCode(code.code);
+																}}
+															>
+																<Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+															</Button>
+														)}
 													</TableCell>
 												</TableRow>
 											))
@@ -577,6 +620,54 @@ function App() {
 					</TabsContent>
 				</Tabs>
 			</main>
+
+			{/* Confirmation Dialog for Disabling Invite Code */}
+			<Dialog
+				open={confirmDeleteCode !== null}
+				onOpenChange={(open) => !open && setConfirmDeleteCode(null)}
+			>
+				<DialogContent showCloseButton={false}>
+					<DialogHeader>
+						<DialogTitle>Disable Invite Code</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to disable this invite code? This action
+							cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="py-2">
+						<code className="bg-muted px-3 py-1.5 rounded text-sm font-mono">
+							{confirmDeleteCode}
+						</code>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setConfirmDeleteCode(null)}
+							disabled={disableInviteMutation.isPending}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => {
+								if (confirmDeleteCode) {
+									disableInviteMutation.mutate(confirmDeleteCode);
+								}
+							}}
+							disabled={disableInviteMutation.isPending}
+						>
+							{disableInviteMutation.isPending ? (
+								<>
+									<Loader2 className="h-4 w-4 animate-spin mr-2" />
+									Disabling...
+								</>
+							) : (
+								"Disable"
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
