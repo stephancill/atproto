@@ -86,6 +86,18 @@ export interface CreateAccountOutput {
   refreshJwt: string
 }
 
+export interface AccountView {
+  did: string
+  handle: string
+  email?: string
+  indexedAt: string
+  emailConfirmedAt?: string
+  invitedBy?: InviteCode
+  invites?: InviteCode[]
+  invitesDisabled?: boolean
+  deactivatedAt?: string
+}
+
 // API functions
 export const api = {
   describeServer: () =>
@@ -108,5 +120,11 @@ export const api = {
     xrpc<{ codes: InviteCode[] }>('com.atproto.admin.getInviteCodes', {
       auth,
     }),
+
+  getAccountInfos: (auth: string, dids: string[]) =>
+    xrpc<{ infos: AccountView[] }>(
+      `com.atproto.admin.getAccountInfos?${dids.map(d => `dids=${encodeURIComponent(d)}`).join('&')}`,
+      { auth },
+    ),
 }
 

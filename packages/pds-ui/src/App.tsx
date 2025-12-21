@@ -8,6 +8,9 @@ import {
 	CheckCircle2,
 	XCircle,
 	Loader2,
+	Mail,
+	MailCheck,
+	AlertTriangle,
 } from "lucide-react";
 import {
 	api,
@@ -15,6 +18,7 @@ import {
 	ApiError,
 	type InviteCode,
 	type CreateAccountInput,
+	type AccountView,
 } from "./api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +75,21 @@ function App() {
 		retry: 1,
 	});
 
+	// Extract DIDs from invite code uses
+	const inviteCodes = inviteCodesQuery.data?.codes || [];
+	const accountDids = extractDidsFromInvites(inviteCodes);
+
+	// Fetch detailed account info for all accounts
+	const accountInfosQuery = useQuery({
+		queryKey: ["accountInfos", auth, accountDids],
+		queryFn: () =>
+			accountDids.length > 0
+				? api.getAccountInfos(auth, accountDids)
+				: Promise.resolve({ infos: [] }),
+		enabled: isAuthenticated && accountDids.length > 0,
+		retry: 1,
+	});
+
 	// Create invite code mutation
 	const createInviteMutation = useMutation({
 		mutationFn: () => api.createInviteCode(auth),
@@ -118,13 +137,15 @@ function App() {
 		});
 	};
 
-	const inviteCodes = inviteCodesQuery.data?.codes || [];
-	const accounts = extractAccountsFromInvites(inviteCodes);
+	const accounts: AccountView[] = accountInfosQuery.data?.infos || [];
 
 	const error =
 		(inviteCodesQuery.error instanceof ApiError
 			? inviteCodesQuery.error.message
 			: inviteCodesQuery.error?.message) ||
+		(accountInfosQuery.error instanceof ApiError
+			? accountInfosQuery.error.message
+			: accountInfosQuery.error?.message) ||
 		(createInviteMutation.error instanceof ApiError
 			? createInviteMutation.error.message
 			: createInviteMutation.error?.message) ||
@@ -332,16 +353,27 @@ function App() {
 					<TabsContent value="accounts">
 						<Card>
 							<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-								<CardTitle className="text-base font-medium">
-									Accounts
-								</CardTitle>
+								<div>
+									<CardTitle className="text-base font-medium">
+										Accounts
+									</CardTitle>
+									<CardDescription>
+										Accounts created via invite codes
+									</CardDescription>
+								</div>
 								<Button
 									variant="outline"
 									size="sm"
-									onClick={() => inviteCodesQuery.refetch()}
-									disabled={inviteCodesQuery.isFetching}
+									onClick={() => {
+										inviteCodesQuery.refetch();
+										accountInfosQuery.refetch();
+									}}
+									disabled={
+										inviteCodesQuery.isFetching || accountInfosQuery.isFetching
+									}
 								>
-									{inviteCodesQuery.isFetching ? (
+									{inviteCodesQuery.isFetching ||
+									accountInfosQuery.isFetching ? (
 										<Loader2 className="h-4 w-4 animate-spin" />
 									) : (
 										<RefreshCw className="h-4 w-4" />
@@ -353,15 +385,22 @@ function App() {
 								<Table>
 									<TableHeader>
 										<TableRow>
-											<TableHead>DID</TableHead>
-											<TableHead>Created</TableHead>
+											<TableHead>Handle</TableHead>
+											<TableHead className="hidden md:table-cell">
+												Email
+											</TableHead>
+											<TableHead>Status</TableHead>
+											<TableHead className="hidden sm:table-cell">
+												Created
+											</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{inviteCodesQuery.isLoading ? (
+										{inviteCodesQuery.isLoading ||
+										accountInfosQuery.isLoading ? (
 											<TableRow>
 												<TableCell
-													colSpan={2}
+													colSpan={4}
 													className="text-center py-8 text-muted-foreground"
 												>
 													<Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
@@ -371,7 +410,7 @@ function App() {
 										) : accounts.length === 0 ? (
 											<TableRow>
 												<TableCell
-													colSpan={2}
+													colSpan={4}
 													className="text-center py-8 text-muted-foreground"
 												>
 													No accounts found
@@ -380,13 +419,54 @@ function App() {
 										) : (
 											accounts.map((account) => (
 												<TableRow key={account.did}>
-													<TableCell className="font-mono text-xs text-muted-foreground">
-														{account.did}
+													<TableCell>
+														<div className="flex flex-col gap-0.5">
+															<span className="font-medium">
+																@{account.handle}
+															</span>
+															<span className="font-mono text-xs text-muted-foreground truncate max-w-[200px]">
+																{account.did}
+															</span>
+														</div>
 													</TableCell>
-													<TableCell className="text-muted-foreground">
-														{account.createdAt
-															? new Date(account.createdAt).toLocaleDateString()
-															: "-"}
+													<TableCell className="hidden md:table-cell">
+														{account.email ? (
+															<div className="flex items-center gap-2">
+																<span className="text-sm truncate max-w-[180px]">
+																	{account.email}
+																</span>
+																<span
+																	title={
+																		account.emailConfirmedAt
+																			? "Email verified"
+																			: "Email not verified"
+																	}
+																>
+																	{account.emailConfirmedAt ? (
+																		<MailCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
+																	) : (
+																		<Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+																	)}
+																</span>
+															</div>
+														) : (
+															<span className="text-muted-foreground">-</span>
+														)}
+													</TableCell>
+													<TableCell>
+														{account.deactivatedAt ? (
+															<Badge variant="secondary" className="gap-1">
+																<AlertTriangle className="h-3 w-3" />
+																Deactivated
+															</Badge>
+														) : (
+															<Badge className="bg-green-500/15 text-green-500 hover:bg-green-500/25">
+																Active
+															</Badge>
+														)}
+													</TableCell>
+													<TableCell className="text-muted-foreground hidden sm:table-cell">
+														{new Date(account.indexedAt).toLocaleDateString()}
 													</TableCell>
 												</TableRow>
 											))
@@ -477,26 +557,17 @@ function App() {
 	);
 }
 
-// Helper to extract accounts from invite code uses
-function extractAccountsFromInvites(
-	codes: InviteCode[],
-): { did: string; createdAt: string }[] {
-	const accountMap = new Map<string, { did: string; createdAt: string }>();
+// Helper to extract unique DIDs from invite code uses
+function extractDidsFromInvites(codes: InviteCode[]): string[] {
+	const dids = new Set<string>();
 
 	for (const code of codes) {
 		for (const use of code.uses || []) {
-			if (!accountMap.has(use.usedBy)) {
-				accountMap.set(use.usedBy, {
-					did: use.usedBy,
-					createdAt: use.usedAt,
-				});
-			}
+			dids.add(use.usedBy);
 		}
 	}
 
-	return Array.from(accountMap.values()).sort(
-		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-	);
+	return Array.from(dids);
 }
 
 export default App;
