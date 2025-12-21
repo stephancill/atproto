@@ -126,5 +126,12 @@ export const api = {
       `com.atproto.admin.getAccountInfos?${dids.map(d => `dids=${encodeURIComponent(d)}`).join('&')}`,
       { auth },
     ),
+
+  sendEmailConfirmation: (auth: string, did: string) =>
+    xrpc<{ sent: boolean }>('com.atproto.admin.sendEmailConfirmation', {
+      method: 'POST',
+      body: { did },
+      auth,
+    }),
 }
 

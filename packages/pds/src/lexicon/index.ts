@@ -140,6 +140,7 @@ import * as ComAtprotoAdminGetInviteCodes from './types/com/atproto/admin/getInv
 import * as ComAtprotoAdminGetSubjectStatus from './types/com/atproto/admin/getSubjectStatus.js'
 import * as ComAtprotoAdminSearchAccounts from './types/com/atproto/admin/searchAccounts.js'
 import * as ComAtprotoAdminSendEmail from './types/com/atproto/admin/sendEmail.js'
+import * as ComAtprotoAdminSendEmailConfirmation from './types/com/atproto/admin/sendEmailConfirmation.js'
 import * as ComAtprotoAdminUpdateAccountEmail from './types/com/atproto/admin/updateAccountEmail.js'
 import * as ComAtprotoAdminUpdateAccountHandle from './types/com/atproto/admin/updateAccountHandle.js'
 import * as ComAtprotoAdminUpdateAccountPassword from './types/com/atproto/admin/updateAccountPassword.js'
@@ -2176,6 +2177,18 @@ export class ComAtprotoAdminNS {
     >,
   ) {
     const nsid = 'com.atproto.admin.sendEmail' // @ts-ignore
+    return this._server.xrpc.method(nsid, cfg)
+  }
+
+  sendEmailConfirmation<A extends Auth = void>(
+    cfg: MethodConfigOrHandler<
+      A,
+      ComAtprotoAdminSendEmailConfirmation.QueryParams,
+      ComAtprotoAdminSendEmailConfirmation.HandlerInput,
+      ComAtprotoAdminSendEmailConfirmation.HandlerOutput
+    >,
+  ) {
+    const nsid = 'com.atproto.admin.sendEmailConfirmation' // @ts-ignore
     return this._server.xrpc.method(nsid, cfg)
   }
 

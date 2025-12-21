@@ -8,9 +8,9 @@ import {
 	CheckCircle2,
 	XCircle,
 	Loader2,
-	Mail,
 	MailCheck,
 	AlertTriangle,
+	Send,
 } from "lucide-react";
 import {
 	api,
@@ -112,6 +112,14 @@ function App() {
 		},
 	});
 
+	// Send email confirmation mutation
+	const sendEmailConfirmationMutation = useMutation({
+		mutationFn: (did: string) => api.sendEmailConfirmation(auth, did),
+		onSuccess: () => {
+			setSuccessMessage("Verification email sent!");
+		},
+	});
+
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsAuthenticated(true);
@@ -151,7 +159,10 @@ function App() {
 			: createInviteMutation.error?.message) ||
 		(createAccountMutation.error instanceof ApiError
 			? createAccountMutation.error.message
-			: createAccountMutation.error?.message);
+			: createAccountMutation.error?.message) ||
+		(sendEmailConfirmationMutation.error instanceof ApiError
+			? sendEmailConfirmationMutation.error.message
+			: sendEmailConfirmationMutation.error?.message);
 
 	if (!isAuthenticated) {
 		return (
@@ -435,19 +446,32 @@ function App() {
 																<span className="text-sm truncate max-w-[180px]">
 																	{account.email}
 																</span>
-																<span
-																	title={
-																		account.emailConfirmedAt
-																			? "Email verified"
-																			: "Email not verified"
-																	}
-																>
-																	{account.emailConfirmedAt ? (
+																{account.emailConfirmedAt ? (
+																	<span title="Email verified">
 																		<MailCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
-																	) : (
-																		<Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-																	)}
-																</span>
+																	</span>
+																) : (
+																	<Button
+																		variant="ghost"
+																		size="icon-sm"
+																		title="Send verification email"
+																		disabled={
+																			sendEmailConfirmationMutation.isPending
+																		}
+																		onClick={() => {
+																			setSuccessMessage("");
+																			sendEmailConfirmationMutation.mutate(
+																				account.did,
+																			);
+																		}}
+																	>
+																		{sendEmailConfirmationMutation.isPending ? (
+																			<Loader2 className="h-4 w-4 animate-spin" />
+																		) : (
+																			<Send className="h-4 w-4 text-muted-foreground hover:text-primary" />
+																		)}
+																	</Button>
+																)}
 															</div>
 														) : (
 															<span className="text-muted-foreground">-</span>

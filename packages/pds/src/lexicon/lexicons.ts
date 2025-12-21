@@ -10559,6 +10559,44 @@ export const schemaDict = {
       },
     },
   },
+  ComAtprotoAdminSendEmailConfirmation: {
+    lexicon: 1,
+    id: 'com.atproto.admin.sendEmailConfirmation',
+    defs: {
+      main: {
+        type: 'procedure',
+        description:
+          'Send an email confirmation/verification email to the specified account.',
+        input: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['did'],
+            properties: {
+              did: {
+                type: 'string',
+                format: 'did',
+                description:
+                  'The DID of the account to send the confirmation email to.',
+              },
+            },
+          },
+        },
+        output: {
+          encoding: 'application/json',
+          schema: {
+            type: 'object',
+            required: ['sent'],
+            properties: {
+              sent: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   ComAtprotoAdminUpdateAccountEmail: {
     lexicon: 1,
     id: 'com.atproto.admin.updateAccountEmail',
@@ -20236,6 +20274,8 @@ export const ids = {
   ComAtprotoAdminGetSubjectStatus: 'com.atproto.admin.getSubjectStatus',
   ComAtprotoAdminSearchAccounts: 'com.atproto.admin.searchAccounts',
   ComAtprotoAdminSendEmail: 'com.atproto.admin.sendEmail',
+  ComAtprotoAdminSendEmailConfirmation:
+    'com.atproto.admin.sendEmailConfirmation',
   ComAtprotoAdminUpdateAccountEmail: 'com.atproto.admin.updateAccountEmail',
   ComAtprotoAdminUpdateAccountHandle: 'com.atproto.admin.updateAccountHandle',
   ComAtprotoAdminUpdateAccountPassword:

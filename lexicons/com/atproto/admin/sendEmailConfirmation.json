@@ -1,0 +1,40 @@
+{
+  "lexicon": 1,
+  "id": "com.atproto.admin.sendEmailConfirmation",
+  "defs": {
+    "main": {
+      "type": "procedure",
+      "description": "Send an email confirmation/verification email to the specified account.",
+      "input": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "did"
+          ],
+          "properties": {
+            "did": {
+              "type": "string",
+              "format": "did",
+              "description": "The DID of the account to send the confirmation email to."
+            }
+          }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "sent"
+          ],
+          "properties": {
+            "sent": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}
