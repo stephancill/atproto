@@ -18,6 +18,7 @@ import {
   ResponseType,
   XRPCError,
 } from '@atproto/xrpc-server'
+import * as adminUiRoutes from './admin-ui-routes'
 import apiRoutes from './api'
 import * as authRoutes from './auth-routes'
 import * as basicRoutes from './basic-routes'
@@ -159,6 +160,7 @@ export class PDS {
     app.use(compression())
     app.use(authRoutes.createRouter(ctx)) // Before CORS
     app.use(cors({ maxAge: DAY / SECOND }))
+    app.use(adminUiRoutes.createRouter()) // Admin UI (optional)
     app.use(basicRoutes.createRouter(ctx))
     app.use(wellKnown.createRouter(ctx))
     app.use(server.xrpc.router)

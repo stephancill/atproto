@@ -42,6 +42,7 @@ COPY ./packages/oauth/oauth-provider-ui ./packages/oauth/oauth-provider-ui
 COPY ./packages/oauth/oauth-scopes ./packages/oauth/oauth-scopes
 COPY ./packages/oauth/oauth-types ./packages/oauth/oauth-types
 COPY ./packages/pds ./packages/pds
+COPY ./packages/pds-ui ./packages/pds-ui
 COPY ./packages/repo ./packages/repo
 COPY ./packages/sync ./packages/sync
 COPY ./packages/syntax ./packages/syntax
@@ -55,6 +56,8 @@ COPY ./services/pds ./services/pds
 RUN pnpm install --frozen-lockfile
 # build all packages with external node_modules
 RUN pnpm run --recursive --stream --filter '@atproto/pds...' build
+# build PDS UI
+RUN pnpm run --filter '@atproto/pds-ui' build
 # clean up
 RUN rm -rf node_modules
 # install only prod deps, hoisted to root node_modules dir
@@ -72,13 +75,16 @@ ENTRYPOINT ["dumb-init", "--"]
 
 WORKDIR /app/services/pds
 COPY --from=build /app /app
-RUN mkdir /app/data && chown node /app/data
 
-# VOLUME /app/data # Railway will mount here
+# Copy PDS UI dist to a known location
+RUN mkdir -p /app/admin-ui && cp -r /app/packages/pds-ui/dist/* /app/admin-ui/ 2>/dev/null || true
+
+RUN mkdir -p /app/data && chown node /app/data
 
 EXPOSE 3000
 ENV PDS_PORT=3000
 ENV NODE_ENV=production
+ENV PDS_ADMIN_UI_PATH=/app/admin-ui
 # potential perf issues w/ io_uring on this version of node
 ENV UV_USE_IO_URING=0
 
