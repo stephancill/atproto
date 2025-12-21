@@ -1,0 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "services/pds/Dockerfile"
+
+[deploy]
+healthcheckPath = "/xrpc/_health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
