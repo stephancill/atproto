@@ -4,6 +4,6 @@ dockerfilePath = "services/pds/Dockerfile.railway"
 
 [deploy]
 healthcheckPath = "/xrpc/_health"
-healthcheckTimeout = 100
+healthcheckTimeout = 30
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
