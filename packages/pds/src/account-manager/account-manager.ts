@@ -526,6 +526,12 @@ export class AccountManager {
     )
   }
 
+  async confirmEmailAdmin(opts: { did: string }) {
+    const { did } = opts
+    const now = new Date().toISOString()
+    await account.setEmailConfirmedAt(this.db, did, now)
+  }
+
   async updateEmail(opts: { did: string; email: string }) {
     const { did, email } = opts
     await this.db.transaction((dbTxn) =>
