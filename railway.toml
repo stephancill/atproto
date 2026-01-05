@@ -1,9 +1,9 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "/services/pds/Dockerfile.railway"
+dockerfilePath = "services/pds/Dockerfile.railway"
 
 [deploy]
 healthcheckPath = "/xrpc/_health"
-healthcheckTimeout = 30
+healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3

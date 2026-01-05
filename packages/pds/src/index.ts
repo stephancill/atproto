@@ -22,6 +22,7 @@ import * as adminUiRoutes from './admin-ui-routes'
 import apiRoutes from './api'
 import * as authRoutes from './auth-routes'
 import * as basicRoutes from './basic-routes'
+import * as customAdminRoutes from './custom-admin-routes'
 import { ServerConfig, ServerSecrets } from './config'
 import { AppContext, AppContextOptions } from './context'
 import * as error from './error'
@@ -160,6 +161,7 @@ export class PDS {
     app.use(compression())
     app.use(authRoutes.createRouter(ctx)) // Before CORS
     app.use(cors({ maxAge: DAY / SECOND }))
+    app.use(customAdminRoutes.createRouter(ctx)) // Custom admin endpoints (before XRPC)
     app.use(adminUiRoutes.createRouter()) // Admin UI (optional)
     app.use(basicRoutes.createRouter(ctx))
     app.use(wellKnown.createRouter(ctx))

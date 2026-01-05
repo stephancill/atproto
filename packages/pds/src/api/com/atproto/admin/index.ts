@@ -1,6 +1,5 @@
 import { AppContext } from '../../../../context'
 import { Server } from '../../../../lexicon'
-import confirmAccountEmail from './confirmAccountEmail'
 import deleteAccount from './deleteAccount'
 import disableAccountInvites from './disableAccountInvites'
 import disableInviteCodes from './disableInviteCodes'
@@ -17,7 +16,6 @@ import updateAccountPassword from './updateAccountPassword'
 import updateSubjectStatus from './updateSubjectStatus'
 
 export default function (server: Server, ctx: AppContext) {
-  confirmAccountEmail(server, ctx)
   updateSubjectStatus(server, ctx)
   getSubjectStatus(server, ctx)
   getAccountInfo(server, ctx)

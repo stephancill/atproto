@@ -106,6 +106,11 @@ export class AuthVerifier {
     this.dids = opts.dids
   }
 
+  // Public method to verify admin credentials for custom Express routes
+  public verifyAdminCredentials(username: string, password: string): boolean {
+    return username === 'admin' && password === this._adminPass
+  }
+
   // verifiers (arrow fns to preserve scope)
 
   public unauthenticated: MethodAuthVerifier<UnauthenticatedOutput> = (ctx) => {

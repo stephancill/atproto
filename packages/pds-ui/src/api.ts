@@ -145,5 +145,13 @@ export const api = {
       body: { codes },
       auth,
     }),
+
+  // Custom admin endpoint to manually confirm an account's email
+  confirmAccountEmail: (auth: string, account: string) =>
+    xrpc<{ success: boolean }>('com.atproto.admin.confirmAccountEmail', {
+      method: 'POST',
+      body: { account },
+      auth,
+    }),
 }
 

@@ -144,6 +144,15 @@ function App() {
 		},
 	});
 
+	// Confirm account email mutation (manual verification)
+	const confirmEmailMutation = useMutation({
+		mutationFn: (did: string) => api.confirmAccountEmail(auth, did),
+		onSuccess: () => {
+			setSuccessMessage("Email verified!");
+			queryClient.invalidateQueries({ queryKey: ["accountInfos"] });
+		},
+	});
+
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsAuthenticated(true);
@@ -189,7 +198,10 @@ function App() {
 			: sendEmailConfirmationMutation.error?.message) ||
 		(disableInviteMutation.error instanceof ApiError
 			? disableInviteMutation.error.message
-			: disableInviteMutation.error?.message);
+			: disableInviteMutation.error?.message) ||
+		(confirmEmailMutation.error instanceof ApiError
+			? confirmEmailMutation.error.message
+			: confirmEmailMutation.error?.message);
 
 	if (!isAuthenticated) {
 		return (
@@ -494,26 +506,46 @@ function App() {
 																		<MailCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
 																	</span>
 																) : (
-																	<Button
-																		variant="ghost"
-																		size="icon-sm"
-																		title="Send verification email"
-																		disabled={
-																			sendEmailConfirmationMutation.isPending
-																		}
-																		onClick={() => {
-																			setSuccessMessage("");
-																			sendEmailConfirmationMutation.mutate(
-																				account.did,
-																			);
-																		}}
-																	>
-																		{sendEmailConfirmationMutation.isPending ? (
-																			<Loader2 className="h-4 w-4 animate-spin" />
-																		) : (
-																			<Send className="h-4 w-4 text-muted-foreground hover:text-primary" />
-																		)}
-																	</Button>
+																	<div className="flex items-center gap-1">
+																		<Button
+																			variant="ghost"
+																			size="icon-sm"
+																			title="Send verification email"
+																			disabled={
+																				sendEmailConfirmationMutation.isPending
+																			}
+																			onClick={() => {
+																				setSuccessMessage("");
+																				sendEmailConfirmationMutation.mutate(
+																					account.did,
+																				);
+																			}}
+																		>
+																			{sendEmailConfirmationMutation.isPending ? (
+																				<Loader2 className="h-4 w-4 animate-spin" />
+																			) : (
+																				<Send className="h-4 w-4 text-muted-foreground hover:text-primary" />
+																			)}
+																		</Button>
+																		<Button
+																			variant="ghost"
+																			size="icon-sm"
+																			title="Verify email manually"
+																			disabled={confirmEmailMutation.isPending}
+																			onClick={() => {
+																				setSuccessMessage("");
+																				confirmEmailMutation.mutate(
+																					account.did,
+																				);
+																			}}
+																		>
+																			{confirmEmailMutation.isPending ? (
+																				<Loader2 className="h-4 w-4 animate-spin" />
+																			) : (
+																				<CheckCircle2 className="h-4 w-4 text-muted-foreground hover:text-green-500" />
+																			)}
+																		</Button>
+																	</div>
 																)}
 															</div>
 														) : (
