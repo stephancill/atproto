@@ -78,7 +78,9 @@
     "typed-emitter": "^2.1.0",
     "uint8arrays": "3.0.0",
     "undici": "^6.19.8",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@simplewebauthn/browser": "^9.0.0",
+    "@simplewebauthn/server": "^9.0.0"
   },
   "devDependencies": {
     "@atproto/api": "workspace:^",
