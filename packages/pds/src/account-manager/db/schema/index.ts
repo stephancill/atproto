@@ -8,6 +8,7 @@ import * as device from './device'
 import * as emailToken from './email-token'
 import * as inviteCode from './invite-code'
 import * as lexicon from './lexicon'
+import * as passkey from './passkey'
 import * as refreshToken from './refresh-token'
 import * as repoRoot from './repo-root'
 import * as token from './token'
@@ -26,7 +27,8 @@ export type DatabaseSchema = actor.PartialDB &
   repoRoot.PartialDB &
   inviteCode.PartialDB &
   lexicon.PartialDB &
-  emailToken.PartialDB
+  emailToken.PartialDB &
+  passkey.PartialDB
 
 export type { Actor, ActorEntry } from './actor'
 export type { Account, AccountEntry } from './account'
@@ -41,3 +43,4 @@ export type { RefreshToken } from './refresh-token'
 export type { AppPassword } from './app-password'
 export type { InviteCode, InviteCodeUse } from './invite-code'
 export type { EmailToken, EmailTokenPurpose } from './email-token'
+export type { Passkey, PasskeyEntry } from './passkey'

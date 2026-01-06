@@ -1,6 +1,7 @@
 import type { SignedJwt } from '@atproto/jwk'
 import type { OAuthClientMetadata } from '@atproto/oauth-types'
 import type { Account, DeviceMetadata, ISODateString } from './types.js'
+import type { AuthenticationResponseJSON, RegistrationResponseJSON } from '@simplewebauthn/server'
 
 // These are the endpoints implemented by the OAuth provider, for its UI to
 // call.
@@ -91,6 +92,31 @@ export type ApiEndpoints = {
     input: RejectInput
     output: { url: string }
   }
+  '/passkey/register-challenge': {
+    method: 'POST'
+    input: PasskeyRegisterChallengeInput
+    output: PasskeyRegisterChallengeOutput
+  }
+  '/passkey/register-verify': {
+    method: 'POST'
+    input: PasskeyRegisterVerifyInput
+    output: { success: true }
+  }
+  '/passkey/authenticate-challenge': {
+    method: 'POST'
+    input: PasskeyAuthenticateChallengeInput
+    output: PasskeyAuthenticateChallengeOutput
+  }
+  '/passkey/list': {
+    method: 'GET'
+    params: { sub: string }
+    output: Passkey[]
+  }
+  '/passkey/delete': {
+    method: 'POST'
+    input: PasskeyDeleteInput
+    output: { success: true }
+  }
 }
 
 /**
@@ -107,8 +133,9 @@ export type EphemeralToken = SignedJwt
 export type SignInInput = {
   locale: string
   username: string
-  password: string
+  password?: string
   emailOtp?: string
+  passkeyCredential?: AuthenticationResponseJSON
   remember?: boolean
 }
 
@@ -166,6 +193,42 @@ export type ConsentInput = {
 }
 
 export type RejectInput = Record<string, never>
+
+export type PasskeyRegisterChallengeInput = {
+  username: string
+}
+
+export type PasskeyRegisterChallengeOutput = {
+  options: RegistrationResponseJSON
+}
+
+export type PasskeyRegisterVerifyInput = {
+  username: string
+  response: RegistrationResponseJSON
+  deviceName?: string
+}
+
+export type PasskeyAuthenticateChallengeInput = {
+  username: string
+}
+
+export type PasskeyAuthenticateChallengeOutput = {
+  options: AuthenticationResponseJSON
+}
+
+export type Passkey = {
+  credentialId: string
+  deviceName: string
+  createdAt: ISODateString
+  lastUsedAt: ISODateString | null
+  backupEligible: boolean
+  backupState: boolean
+}
+
+export type PasskeyDeleteInput = {
+  sub: string
+  credentialId: string
+}
 
 /**
  * Represents an account that is currently signed-in to the Authorization

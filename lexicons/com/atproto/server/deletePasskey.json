@@ -1,0 +1,20 @@
+{
+  "lexicon": 1,
+  "id": "com.atproto.server.deletePasskey",
+  "defs": {
+    "main": {
+      "type": "object",
+      "required": ["sub", "credentialId"],
+      "properties": {
+        "sub": {
+          "type": "string",
+          "description": "Subject identifier (DID) of the account"
+        },
+        "credentialId": {
+          "type": "string",
+          "description": "ID of the passkey to delete"
+        }
+      }
+    }
+  }
+}

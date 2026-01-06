@@ -340,6 +340,11 @@ export class AppContext {
             plcRotationKey,
             cfg.service.publicUrl,
             cfg.identity.recoveryDidKey,
+            {
+              rpId: cfg.oauth.provider.rpId ?? new URL(cfg.service.publicUrl).hostname,
+              rpName: cfg.oauth.provider.rpName ?? cfg.service.hostname + ' PDS',
+              timeout: cfg.oauth.provider.timeout ?? 60000,
+            },
           ),
           redis: redisScratch,
           dpopSecret: secrets.dpopSecret,

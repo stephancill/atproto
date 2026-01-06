@@ -17,6 +17,7 @@ import {
 import { Sub } from '../oidc/sub.js'
 import { InviteCode } from '../types/invite-code.js'
 import { SignUpInput } from './sign-up-input.js'
+import { AuthenticationResponseJSON } from '@simplewebauthn/server'
 
 // Export all types needed to implement the AccountStore interface
 
@@ -53,9 +54,10 @@ export type CreateAccountData = {
 
 export type AuthenticateAccountData = {
   locale: string
-  password: string
+  password?: string
   username: string
   emailOtp?: string | undefined
+  passkeyCredential?: AuthenticationResponseJSON
 }
 
 export type AuthorizedClientData = { authorizedScopes: readonly string[] }

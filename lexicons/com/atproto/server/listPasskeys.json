@@ -1,0 +1,11 @@
+{
+  "lexicon": 1,
+  "id": "com.atproto.server.listPasskeys",
+  "defs": {
+    "main": {
+      "type": "object",
+      "required": [],
+      "description": "List all passkeys registered for the authenticated account"
+    }
+  }
+}

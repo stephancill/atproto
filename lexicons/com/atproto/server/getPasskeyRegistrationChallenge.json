@@ -1,0 +1,17 @@
+{
+  "lexicon": 1,
+  "id": "com.atproto.server.getPasskeyRegistrationChallenge",
+  "defs": {
+    "main": {
+      "type": "object",
+      "required": ["username"],
+      "description": "Generate a WebAuthn registration challenge for registering a new passkey",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Username or email of the account to register a passkey for"
+        }
+      }
+    }
+  }
+}
