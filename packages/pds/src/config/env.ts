@@ -24,8 +24,12 @@ export function readEnv() {
     hcaptchaSecretKey: envStr('PDS_HCAPTCHA_SECRET_KEY'),
     hcaptchaTokenSalt: envStr('PDS_HCAPTCHA_TOKEN_SALT'),
 
-    // OAuth
+        // OAuth
     trustedOAuthClients: envList('PDS_OAUTH_TRUSTED_CLIENTS'),
+    passkeyRpId: envStr('PDS_PASSKEY_RP_ID'),
+    passkeyRpName: envStr('PDS_PASSKEY_RP_NAME'),
+    passkeyTimeout: envInt('PDS_PASSKEY_TIMEOUT'),
+,
 
     // branding
     lightColor: envStr('PDS_LIGHT_COLOR'),

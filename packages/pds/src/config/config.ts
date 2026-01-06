@@ -318,6 +318,9 @@ export const envToCfg = (env: ServerEnvironment): ServerConfig => {
             ),
           },
           trustedClients: env.trustedOAuthClients,
+          rpId: env.passkeyRpId ?? new URL(serviceCfg.publicUrl).hostname,
+          rpName: env.passkeyRpName ?? `${hostname} PDS`,
+          timeout: env.passkeyTimeout ?? 60000,
         },
       }
 
@@ -469,7 +472,16 @@ export type OAuthConfig = {
     hcaptcha?: HcaptchaConfig
     branding: BrandingInput
     trustedClients?: string[]
+    rpId?: string
+    rpName?: string
+    timeout?: number
   }
+}
+
+export type PasskeyConfig = {
+  rpId: string
+  rpName: string
+  timeout: number
 }
 
 export type LexiconResolverConfig = {

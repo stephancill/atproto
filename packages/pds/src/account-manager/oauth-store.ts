@@ -57,6 +57,9 @@ import * as deviceHelper from './helpers/device'
 import * as lexiconHelper from './helpers/lexicon'
 import * as tokenHelper from './helpers/token'
 import * as usedRefreshTokenHelper from './helpers/used-refresh-token'
+import * as passkey from './helpers/passkey'
+import type { Passkey } from '@atproto/oauth-provider-api'
+import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 
 /**
  * This class' purpose is to implement the interface needed by the OAuthProvider
@@ -78,6 +81,7 @@ export class OAuthStore
     private readonly plcRotationKey: Keypair,
     private readonly publicUrl: string,
     private readonly recoveryDidKey: string | null,
+    private readonly passkeyConfig: { rpId: string; rpName: string; timeout: number },
   ) {}
 
   private get db() {
@@ -205,10 +209,45 @@ export class OAuthStore
     password,
     // Not supported by the PDS (yet?)
     emailOtp = undefined,
+    passkeyCredential,
   }: AuthenticateAccountData): Promise<Account> {
     // @TODO (?) Send an email to the user to notify them of the login attempt
     try {
-      // Should never happen
+      // Passkey authentication path
+      if (passkeyCredential) {
+        if (password) {
+          throw new InvalidRequestError('Cannot use both password and passkey')
+        }
+
+        if (emailOtp != null) {
+          throw new Error('Email OTP is not supported')
+        }
+
+        const { did } = await passkey.verifyPasskeyAuthentication(
+          this.db,
+          identifier,
+          passkeyCredential,
+          '',  // Challenge will be retrieved from session/store
+          this.passkeyConfig.rpId,
+        )
+
+        const accountRow = await this.accountManager.getAccount(did, {
+          includeDeactivated: true,
+          includeTakenDown: true,
+        })
+
+        if (!accountRow) throw new InvalidRequestError('Account not found')
+
+        const isSoftDeleted = !accountRow.deactivatedAt && !accountRow.takedownRef
+
+        if (isSoftDeleted) {
+          throw new InvalidRequestError('Account was taken down')
+        }
+
+        return this.buildAccount(accountRow)
+      }
+
+      // Password authentication path (existing logic)
       if (emailOtp != null) {
         throw new Error('Email OTP is not supported')
       }
@@ -627,5 +666,62 @@ export class OAuthStore
     }
 
     return account
+  }
+
+  // Passkey methods
+
+  async generatePasskeyRegistrationChallenge(
+    username: string,
+  ): Promise<Record<string, unknown>> {
+    return passkey.generatePasskeyRegistrationChallenge(
+      this.db,
+      username,
+      this.passkeyConfig.rpId,
+      this.passkeyConfig.rpName,
+      this.passkeyConfig.timeout,
+    )
+  }
+
+  async verifyPasskeyRegistration(
+    username: string,
+    response: RegistrationResponseJSON,
+    expectedChallenge: string,
+    deviceName?: string,
+  ): Promise<{ did: string }> {
+    return passkey.verifyPasskeyRegistration(
+      this.db,
+      username,
+      response,
+      expectedChallenge,
+      this.passkeyConfig.rpId,
+      deviceName,
+    )
+  }
+
+  async generatePasskeyAuthenticationChallenge(
+    username: string,
+  ): Promise<Record<string, unknown>> {
+    return passkey.generatePasskeyAuthenticationChallenge(
+      this.db,
+      username,
+      this.passkeyConfig.rpId,
+      this.passkeyConfig.timeout,
+    )
+  }
+
+  async listPasskeys(sub: Sub): Promise<Passkey[]> {
+    const passkeys = await passkey.listPasskeysByDid(this.db, sub)
+    return passkeys.map(p => ({
+      credentialId: p.credentialId,
+      deviceName: p.deviceName || 'Passkey',
+      createdAt: p.createdAt,
+      lastUsedAt: p.lastUsedAt || null,
+      backupEligible: p.backupEligible === 1,
+      backupState: p.backupState === 1,
+    }))
+  }
+
+  async deletePasskey(sub: Sub, credentialId: string): Promise<void> {
+    return passkey.deletePasskey(this.db, sub, credentialId)
   }
 }
