@@ -35,6 +35,12 @@ export function createAccountPageMiddleware<
     writeRedirect(res, new URL('/account/reset-password', issuerUrl).toString())
   })
 
+  // Redirect /settings to /account for convenience
+  router.get<never>(/^\/settings(?:\/.*)?$/, function (_req, res) {
+    const path = this.url.pathname.replace(/^\/settings/, '/account')
+    writeRedirect(res, new URL(path + this.url.search, issuerUrl).toString())
+  })
+
   // Create frontend account pages
   router.get<never>(/^\/account(?:\/.*)?$/, async function (req, res) {
     try {

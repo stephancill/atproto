@@ -13,11 +13,15 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:162
+#: src/routes/account/_minimalLayout/sign-in.tsx:184
 msgid "@handle or email"
 msgstr "@identifiant ou adresse email"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:51
+#: src/routes/account/_appLayout/$sub.tsx:570
+msgid "• Synced"
+msgstr ""
+
+#: src/routes/account/_minimalLayout/sign-in.tsx:53
 msgid "← Back to accounts"
 msgstr "← Retour à la liste des comptes"
 
@@ -34,19 +38,40 @@ msgstr "Un nouveau mot de passe est requis"
 msgid "Accounts"
 msgstr "Utilisateurs"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:127
+#: src/routes/account/_appLayout/$sub.tsx:420
+msgid "Add a passkey"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:412
+#: src/routes/account/_appLayout/$sub.tsx:462
+msgid "Add passkey"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:460
+msgid "Adding..."
+msgstr ""
+
+#: src/routes/account/_minimalLayout/sign-in.tsx:149
 #: src/routes/account/_minimalLayout/reset-password.tsx:62
 #: src/routes/account/_minimalLayout/reset-password.tsx:89
 msgid "An error occurred, please try again."
 msgstr "Une erreur s'est produite, veuillez réessayer."
 
-#: src/routes/account/_appLayout/$sub.tsx:303
+#: src/routes/account/_appLayout/$sub.tsx:579
+msgid "Are you sure you want to delete this passkey? You won't be able to use it to sign in anymore."
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:311
 msgid "Are you sure you want to remove this device?"
 msgstr "Êtes-vous sûr de vouloir déconnecter cet appareil ?"
 
-#: src/routes/account/_appLayout/$sub.tsx:201
+#: src/routes/account/_appLayout/$sub.tsx:209
 msgid "Are you sure you want to revoke access? This application won't be able to access your account anymore."
 msgstr "Êtes-vous sûr de vouloir supprimer l'accès? Cette application ne sera plus en mesure d'accéder à vos informations."
+
+#: src/routes/account/_minimalLayout/sign-in.tsx:297
+msgid "Authenticating..."
+msgstr ""
 
 #: src/routes/account/_minimalLayout/reset-password.tsx:133
 #: src/routes/account/_minimalLayout/reset-password.tsx:212
@@ -57,15 +82,21 @@ msgstr "Retour vers la page de connexion"
 msgid "Branding"
 msgstr "Personnalisation"
 
+#: src/routes/account/_appLayout/$sub.tsx:454
 #: src/components/Prompt.tsx:56
 msgid "Cancel"
 msgstr "Annuler"
+
+#: src/routes/account/_appLayout/$sub.tsx:376
+#: src/routes/account/_appLayout/$sub.tsx:590
+msgid "Cannot delete the last passkey"
+msgstr ""
 
 #: src/routes/account/_minimalLayout/reset-password.tsx:345
 msgid "Click here to send a new code to your email."
 msgstr "Cliquez ici pour envoyer un nouveau code dans votre boîte mail."
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:204
+#: src/routes/account/_minimalLayout/sign-in.tsx:226
 #: src/routes/account/_minimalLayout/reset-password.tsx:239
 msgid "Code"
 msgstr "Code"
@@ -74,13 +105,29 @@ msgstr "Code"
 msgid "Code was resent"
 msgstr "Un nouveau code a été envoyé"
 
-#: src/routes/account/_appLayout/$sub.tsx:63
+#: src/routes/account/_appLayout/$sub.tsx:69
 msgid "Connected apps"
 msgstr "Applications connectées"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:145
+#: src/routes/account/_appLayout/$sub.tsx:566
+msgid "Created {createdAt}"
+msgstr ""
+
+#: src/routes/account/_minimalLayout/sign-in.tsx:167
 msgid "Credentials"
 msgstr "Identifiants"
+
+#: src/routes/account/_appLayout/$sub.tsx:581
+msgid "Delete"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:591
+msgid "Delete passkey"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:577
+msgid "Delete this passkey"
+msgstr ""
 
 #: src/routes/account/_minimalLayout/reset-password.tsx:340
 msgid "Don't see the email? <0>Try sending again.</0>"
@@ -110,15 +157,27 @@ msgstr "Entrez votre adresse email"
 msgid "Enter your email to receive a reset code."
 msgstr "Entrez votre adresse email pour recevoir un code de réinitialisation."
 
-#: src/routes/account/_appLayout/$sub.tsx:78
+#: src/routes/account/_appLayout/$sub.tsx:366
+msgid "Failed to add passkey"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:393
+msgid "Failed to delete passkey"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:84
 msgid "Failed to load connected apps"
 msgstr "Échec du chargement des applications connectées"
 
-#: src/routes/account/_appLayout/$sub.tsx:118
+#: src/routes/account/_appLayout/$sub.tsx:124
 msgid "Failed to load devices"
 msgstr "Échec du chargement des appareils"
 
-#: src/routes/account/_appLayout/$sub.tsx:250
+#: src/routes/account/_appLayout/$sub.tsx:485
+msgid "Failed to load passkeys"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:258
 msgid "Failed to remove device"
 msgstr "Échec de la suppression de l'appareil"
 
@@ -126,11 +185,11 @@ msgstr "Échec de la suppression de l'appareil"
 msgid "Failed to resend code"
 msgstr "Échec de l'envoi du code par email"
 
-#: src/routes/account/_appLayout/$sub.tsx:172
+#: src/routes/account/_appLayout/$sub.tsx:180
 msgid "Failed to sign out"
 msgstr "Échec de la déconnexion"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:250
+#: src/routes/account/_minimalLayout/sign-in.tsx:272
 msgid "Forgot password?"
 msgstr "Mot de passe oublié ?"
 
@@ -138,12 +197,12 @@ msgstr "Mot de passe oublié ?"
 msgid "Get reset code"
 msgstr "Obtenir le code de réinitialisation"
 
-#: src/routes/account/_appLayout/$sub.tsx:53
+#: src/routes/account/_appLayout/$sub.tsx:59
 #: src/components/Footer.tsx:70
 msgid "Home"
 msgstr "Accueil"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:152
+#: src/routes/account/_minimalLayout/sign-in.tsx:174
 msgid "Identifier"
 msgstr "Identifiant"
 
@@ -151,24 +210,28 @@ msgstr "Identifiant"
 msgid "Invalid email"
 msgstr "Adresse email invalide"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:85
+#: src/routes/account/_minimalLayout/sign-in.tsx:107
 msgid "Invalid handle"
 msgstr "Identifiant invalide"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:125
+#: src/routes/account/_minimalLayout/sign-in.tsx:147
 msgid "Invalid identifier or password."
 msgstr "Identifiant ou mot de passe invalide."
 
-#: src/routes/account/_appLayout/$sub.tsx:95
+#: src/routes/account/_appLayout/$sub.tsx:101
 msgid "It appears that you haven’t used this account to sign in to any apps yet."
 msgstr "Il semble que vous n'ayez pas encore utilisé ce compte pour vous connecter à une application."
+
+#: src/routes/account/_appLayout/$sub.tsx:564
+msgid "Last used {lastUsed}"
+msgstr ""
 
 #: src/routes/account/_minimalLayout.tsx:21
 #: src/components/Nav.tsx:18
 msgid "Logo"
 msgstr "Logo"
 
-#: src/routes/account/_appLayout/$sub.tsx:134
+#: src/routes/account/_appLayout/$sub.tsx:140
 msgid "Looks like you aren't logged in on any other devices."
 msgstr "Votre compte n'est utilisé sur aucun autre appareil."
 
@@ -176,25 +239,61 @@ msgstr "Votre compte n'est utilisé sur aucun autre appareil."
 msgid "loopback"
 msgstr "loopback"
 
-#: src/routes/account/_appLayout/$sub.tsx:101
+#: src/routes/account/_appLayout/$sub.tsx:107
 msgid "My devices"
 msgstr "Mes appareils"
 
-#: src/routes/account/_appLayout/$sub.tsx:93
+#: src/routes/account/_appLayout/$sub.tsx:99
 msgid "No connected apps"
 msgstr "Aucune application connectée"
 
-#: src/routes/account/_appLayout/$sub.tsx:133
+#: src/routes/account/_appLayout/$sub.tsx:139
 msgid "No devices"
 msgstr "Aucun appareil"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:177
-#: src/routes/account/_minimalLayout/sign-in.tsx:187
+#: src/routes/account/_appLayout/$sub.tsx:502
+msgid "No passkeys"
+msgstr ""
+
+#: src/routes/account/_minimalLayout/sign-in.tsx:283
+msgid "or"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:357
+msgid "Passkey added successfully"
+msgstr ""
+
+#: src/routes/account/_minimalLayout/sign-in.tsx:83
+msgid "Passkey authentication failed."
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:387
+msgid "Passkey deleted successfully"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:436
+msgid "Passkey name (optional)"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:405
+msgid "Passkeys"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:474
+msgid "Passkeys let you sign in faster and more securely using Face ID, Touch ID, or Windows Hello instead of your password."
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:423
+msgid "Passkeys let you sign in faster and more securely using Face ID, Touch ID, or Windows Hello."
+msgstr ""
+
+#: src/routes/account/_minimalLayout/sign-in.tsx:199
+#: src/routes/account/_minimalLayout/sign-in.tsx:209
 #: src/routes/account/_minimalLayout/reset-password.tsx:278
 msgid "Password"
 msgstr "Mot de passe"
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:90
+#: src/routes/account/_minimalLayout/sign-in.tsx:112
 msgid "Password is required"
 msgstr "Le mot de passe est requis"
 
@@ -206,7 +305,7 @@ msgstr "Le mot de passe doit contenir au moins {MIN_PASSWORD_LENGTH} caractères
 msgid "Privacy Policy"
 msgstr "Politique de confidentialité"
 
-#: src/routes/account/_appLayout/$sub.tsx:302
+#: src/routes/account/_appLayout/$sub.tsx:310
 msgid "Remove this device"
 msgstr "Déconnecter cet appareil"
 
@@ -216,16 +315,16 @@ msgstr "Déconnecter cet appareil"
 msgid "Reset password"
 msgstr "Réinitialiser le mot de passe"
 
-#: src/routes/account/_appLayout/$sub.tsx:203
-#: src/routes/account/_appLayout/$sub.tsx:208
+#: src/routes/account/_appLayout/$sub.tsx:211
+#: src/routes/account/_appLayout/$sub.tsx:216
 msgid "Revoke access"
 msgstr "Révoquer l'accès"
 
-#: src/routes/account/_appLayout/$sub.tsx:197
+#: src/routes/account/_appLayout/$sub.tsx:205
 msgid "Revoke access to {clientName}"
 msgstr "Révoquer l'accès à {clientName}"
 
-#: src/routes/account/_appLayout/$sub.tsx:198
+#: src/routes/account/_appLayout/$sub.tsx:206
 msgid "Revoke access to this application"
 msgstr "Révoquer l'accès à cette application"
 
@@ -237,9 +336,9 @@ msgstr "Sélectionner un compte"
 msgid "Select the account you would like to manage."
 msgstr "Sélectionnez le compte que vous souhaitez gérer."
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:32
-#: src/routes/account/_minimalLayout/sign-in.tsx:136
-#: src/routes/account/_minimalLayout/sign-in.tsx:241
+#: src/routes/account/_minimalLayout/sign-in.tsx:34
+#: src/routes/account/_minimalLayout/sign-in.tsx:158
+#: src/routes/account/_minimalLayout/sign-in.tsx:263
 msgid "Sign in"
 msgstr "Se connecter"
 
@@ -247,8 +346,12 @@ msgstr "Se connecter"
 msgid "Sign in with another account"
 msgstr "Se connecter avec un autre compte"
 
-#: src/routes/account/_appLayout/$sub.tsx:304
-#: src/routes/account/_appLayout/$sub.tsx:314
+#: src/routes/account/_minimalLayout/sign-in.tsx:299
+msgid "Sign in with Passkey"
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:312
+#: src/routes/account/_appLayout/$sub.tsx:322
 #: src/components/AccountSelector.tsx:103
 msgid "Sign out"
 msgstr "Déconnecter"
@@ -261,11 +364,11 @@ msgstr "Une erreur s'est produite"
 msgid "Success!"
 msgstr "Succès !"
 
-#: src/routes/account/_appLayout/$sub.tsx:244
+#: src/routes/account/_appLayout/$sub.tsx:252
 msgid "Successfully removed device"
 msgstr "Déconnexion de l'appareil réussie"
 
-#: src/routes/account/_appLayout/$sub.tsx:166
+#: src/routes/account/_appLayout/$sub.tsx:174
 msgid "Successfully signed out"
 msgstr "Déconnexion réussie"
 
@@ -277,19 +380,19 @@ msgstr "Support"
 msgid "Terms of Service"
 msgstr "Conditions d'utilisation"
 
-#: src/routes/account/_appLayout/$sub.tsx:298
+#: src/routes/account/_appLayout/$sub.tsx:306
 msgid "This device"
 msgstr "Cet appareil"
 
-#: src/routes/account/_appLayout/$sub.tsx:67
+#: src/routes/account/_appLayout/$sub.tsx:73
 msgid "This is a list of all the applications you have authorized to access your account."
 msgstr "Ceci est une liste de toutes les applications que vous avez autorisées à accéder à votre compte."
 
-#: src/routes/account/_appLayout/$sub.tsx:105
+#: src/routes/account/_appLayout/$sub.tsx:111
 msgid "This is a list of all the devices you have used to sign in to your account. New apps can be authorized from any of these devices. If you believe that your account has been compromised, we recommend that you revoke access to all devices."
 msgstr "Ceci est une liste de tous les appareils que vous avez utilisés pour vous connecter à votre compte. De nouvelles applications peuvent être autorisées depuis n'importe lequel de ces appareils. Si vous pensez que votre compte a été compromis, nous vous recommandons de révoquer l'accès à tous les appareils."
 
-#: src/routes/account/_appLayout/$sub.tsx:283
+#: src/routes/account/_appLayout/$sub.tsx:291
 msgid "Unknown user agent"
 msgstr "Appareil inconnu"
 
@@ -310,13 +413,17 @@ msgstr "Nous n'avons pas pu charger vos comptes. Veuillez réactualiser la page 
 msgid "Whoops! An error occurred."
 msgstr "Oups ! Une erreur s'est produite."
 
-#: src/routes/account/_minimalLayout/sign-in.tsx:213
+#: src/routes/account/_minimalLayout/sign-in.tsx:235
 #: src/routes/account/_minimalLayout/reset-password.tsx:249
 msgid "XXXXX-XXXXX"
 msgstr "XXXXX-XXXXX"
 
-#: src/routes/account/_appLayout/$sub.tsx:32
-#: src/routes/account/_appLayout/$sub.tsx:58
+#: src/routes/account/_appLayout/$sub.tsx:504
+msgid "You haven't added any passkeys yet. Add one to sign in faster."
+msgstr ""
+
+#: src/routes/account/_appLayout/$sub.tsx:38
+#: src/routes/account/_appLayout/$sub.tsx:64
 msgid "Your account"
 msgstr "Votre compte"
 

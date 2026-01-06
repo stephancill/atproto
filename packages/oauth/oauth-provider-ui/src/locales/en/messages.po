@@ -17,6 +17,10 @@ msgstr ""
 msgid "• Synced"
 msgstr "• Synced"
 
+#: src/views/settings/settings-view.tsx:184
+msgid "✓ Verified"
+msgstr "✓ Verified"
+
 #: src/views/authorize/sign-in/sign-in-form.tsx:302
 msgid "2FA Confirmation"
 msgstr "2FA Confirmation"
@@ -33,6 +37,11 @@ msgstr "A service controlled by <0>{domain}</0>"
 msgid "Account"
 msgstr "Account"
 
+#: src/views/settings/settings-view.tsx:161
+#: src/views/settings/settings-sign-in-view.tsx:126
+msgid "Account Settings"
+msgstr "Account Settings"
+
 #: src/components/passkey/passkey-register-prompt.tsx:61
 msgid "Add a Passkey"
 msgstr "Add a Passkey"
@@ -41,11 +50,14 @@ msgstr "Add a Passkey"
 msgid "Add a passkey for faster and more secure sign-ins"
 msgstr "Add a passkey for faster and more secure sign-ins"
 
+#: src/views/settings/settings-view.tsx:60
+#: src/views/settings/settings-view.tsx:137
 #: src/components/passkey/passkey-register-prompt.tsx:127
 #: src/components/passkey/passkey-list.tsx:81
 msgid "Add Passkey"
 msgstr "Add Passkey"
 
+#: src/views/settings/settings-view.tsx:135
 #: src/components/passkey/passkey-register-prompt.tsx:125
 msgid "Adding Passkey..."
 msgstr "Adding Passkey..."
@@ -139,6 +151,7 @@ msgctxt "RPC lxm"
 msgid "Call"
 msgstr "Call"
 
+#: src/views/settings/settings-view.tsx:151
 #: src/views/authorize/authorize-view.tsx:224
 #: src/views/authorize/welcome/welcome-view.tsx:51
 #: src/components/forms/form-card-async.tsx:85
@@ -185,6 +198,7 @@ msgctxt "verb"
 msgid "Confirm"
 msgstr "Confirm"
 
+#: src/views/settings/settings-sign-in-view.tsx:83
 #: src/views/authorize/sign-in/sign-in-view.tsx:72
 msgid "Confirm your password to continue"
 msgstr "Confirm your password to continue"
@@ -226,10 +240,12 @@ msgstr "Deny access"
 msgid "Description"
 msgstr "Description"
 
+#: src/views/settings/settings-view.tsx:98
 #: src/components/passkey/passkey-register-prompt.tsx:89
 msgid "Done editing"
 msgstr "Done editing"
 
+#: src/views/settings/settings-view.tsx:112
 #: src/components/passkey/passkey-register-prompt.tsx:103
 msgid "Edit name"
 msgstr "Edit name"
@@ -395,6 +411,7 @@ msgstr "Moderate"
 msgid "Name"
 msgstr "Name"
 
+#: src/views/settings/settings-view.tsx:82
 #: src/components/passkey/passkey-register-prompt.tsx:73
 msgid "Name:"
 msgstr "Name:"
@@ -432,6 +449,10 @@ msgstr "Only letters, numbers, and hyphens"
 #: src/views/authorize/sign-in/sign-in-form.tsx:255
 msgid "or"
 msgstr "or"
+
+#: src/views/settings/settings-view.tsx:70
+msgid "Passkey"
+msgstr "Passkey"
 
 #: src/components/passkey/passkey-list.tsx:77
 msgid "Passkeys"
@@ -523,6 +544,10 @@ msgstr "Reset your password"
 msgid "Secure your account"
 msgstr "Secure your account"
 
+#: src/views/settings/settings-sign-in-view.tsx:127
+msgid "Select an account to manage"
+msgstr "Select an account to manage"
+
 #: src/views/authorize/sign-up/sign-up-handle-form.tsx:196
 msgid "Select domain"
 msgstr "Select domain"
@@ -530,6 +555,15 @@ msgstr "Select domain"
 #: src/views/authorize/sign-in/sign-in-view.tsx:148
 msgid "Select from an existing account"
 msgstr "Select from an existing account"
+
+#: src/views/settings/settings-view.tsx:61
+msgid "Set up a passkey for faster sign-ins"
+msgstr "Set up a passkey for faster sign-ins"
+
+#: src/views/settings/settings-sign-in-view.tsx:82
+#: src/views/settings/settings-sign-in-view.tsx:107
+msgid "Sign in"
+msgstr "Sign in"
 
 #: src/views/authorize/welcome/welcome-view.tsx:45
 #: src/views/authorize/sign-in/sign-in-form.tsx:190
@@ -551,13 +585,22 @@ msgstr "Sign in as {0}"
 msgid "Sign in as..."
 msgstr "Sign in as..."
 
+#: src/views/settings/settings-view.tsx:73
 #: src/components/passkey/passkey-register-prompt.tsx:64
 msgid "Sign in faster with Face ID, Touch ID, or Windows Hello"
 msgstr "Sign in faster with Face ID, Touch ID, or Windows Hello"
 
+#: src/views/settings/settings-sign-in-view.tsx:108
+msgid "Sign in to manage your account settings"
+msgstr "Sign in to manage your account settings"
+
 #: src/views/authorize/sign-in/sign-in-form.tsx:270
 msgid "Sign in with Passkey"
 msgstr "Sign in with Passkey"
+
+#: src/views/settings/settings-view.tsx:207
+msgid "Sign out"
+msgstr "Sign out"
 
 #: src/views/authorize/sign-up/sign-up-view.tsx:88
 #: src/views/authorize/sign-in/sign-in-picker.tsx:53

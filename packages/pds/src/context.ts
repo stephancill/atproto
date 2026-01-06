@@ -328,16 +328,16 @@ export class AppContext {
     // Create OAuthStore and configure passkey support
     const oauthStore = cfg.oauth.provider
       ? new OAuthStore(
-          accountManager,
-          actorStore,
-          imageUrlBuilder,
-          backgroundQueue,
-          mailer,
-          sequencer,
-          plcClient,
-          plcRotationKey,
-          cfg.service.publicUrl,
-          cfg.identity.recoveryDidKey,
+            accountManager,
+            actorStore,
+            imageUrlBuilder,
+            backgroundQueue,
+            mailer,
+            sequencer,
+            plcClient,
+            plcRotationKey,
+            cfg.service.publicUrl,
+            cfg.identity.recoveryDidKey,
         )
       : undefined
 
