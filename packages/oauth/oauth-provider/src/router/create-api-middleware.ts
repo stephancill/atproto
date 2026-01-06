@@ -19,6 +19,14 @@ import {
 } from '@atproto/oauth-types'
 import { signInDataSchema } from '../account/sign-in-data.js'
 import { signUpInputSchema } from '../account/sign-up-input.js'
+import {
+  passkeyRegisterChallengeInputSchema,
+  passkeyRegisterVerifyInputSchema,
+  passkeyAuthenticateChallengeInputSchema,
+  passkeyAuthenticateVerifyInputSchema,
+  passkeyDeleteInputSchema,
+} from '../account/passkey-input.js'
+import type { Passkey, ISODateString } from '@atproto/oauth-provider-api'
 import { DeviceId, deviceIdSchema } from '../device/device-id.js'
 import { AuthorizationError } from '../errors/authorization-error.js'
 import {
@@ -518,6 +526,142 @@ export function createApiMiddleware<
           throw new InvalidRequestError(
             'This endpoint can only be used in the context of an OAuth request',
           )
+        }
+
+        // Once this endpoint is called, the request will definitely be
+        // rejected.
+        try {
+          // No need to authenticate the user here as they are not authorizing a
+          // particular account (CSRF protection is enough).
+
+          // @NOTE that a client could *technically* trigger this endpoint while
+          // the user is on the authorize page by forging a request (because
+          // the client knows the RequestURI from PAR and has all of the info needed to
+          // forge a request, including CSRF). This cannot be used as a DoS attack
+          // as the request ID is not guessable and would only result in a bad UX
+          // for misbehaving clients, only affecting the users of those clients.
+
+          const { parameters } = await server.requestManager.get(
+            requestUri,
+            this.deviceId,
+          )
+
+          const url = buildRedirectUrl(server.issuer, parameters, {
+            error: 'access_denied',
+            error_description: 'The user rejected the request',
+          })
+
+          return { json: { url } }
+        } catch {
+          // Unable to build redirect URL, ignore
+        }
+      },
+    }),
+  )
+
+  // Passkey endpoints
+
+  router.use(
+    apiRoute({
+      method: 'POST',
+      endpoint: '/passkey/register-challenge',
+      schema: passkeyRegisterChallengeInputSchema,
+      async handler(req, res) {
+        const { deviceId, deviceMetadata } = await server.deviceManager.load(
+          req,
+          res,
+        )
+
+        const options = await server.accountManager.generatePasskeyRegistrationChallenge(
+          this.input.username,
+        )
+
+        return { json: { options } }
+      },
+    }),
+  )
+
+  router.use(
+    apiRoute({
+      method: 'POST',
+      endpoint: '/passkey/register-verify',
+      schema: passkeyRegisterVerifyInputSchema,
+      rotateDeviceCookies: true,
+      async handler(req, res) {
+        const { deviceId, deviceMetadata } = await server.deviceManager.load(
+          req,
+          res,
+        )
+
+        await server.accountManager.verifyPasskeyRegistration(
+          this.input.username,
+          this.input.response,
+          this.input.deviceName,
+        )
+
+        return { json: { success: true } }
+      },
+    }),
+  )
+
+  router.use(
+    apiRoute({
+      method: 'POST',
+      endpoint: '/passkey/authenticate-challenge',
+      schema: passkeyAuthenticateChallengeInputSchema,
+      async handler(req, res) {
+        const { deviceId, deviceMetadata } = await server.deviceManager.load(
+          req,
+          res,
+        )
+
+        const options = await server.accountManager.generatePasskeyAuthenticationChallenge(
+          this.input.username,
+        )
+
+        return { json: { options } }
+      },
+    }),
+  )
+
+  router.use(
+    apiRoute({
+      method: 'GET',
+      endpoint: '/passkey/list',
+      schema: z.object({ sub: subSchema }),
+      async handler(req, res) {
+        const { deviceId, deviceMetadata } = await server.deviceManager.load(
+          req,
+          res,
+        )
+
+        const passkeys = await server.accountManager.listPasskeys(this.input.sub)
+
+        return { json: { passkeys } }
+      },
+    }),
+  )
+
+  router.use(
+    apiRoute({
+      method: 'POST',
+      endpoint: '/passkey/delete',
+      schema: passkeyDeleteInputSchema,
+      rotateDeviceCookies: true,
+      async handler(req, res) {
+        const { deviceId, deviceMetadata } = await server.deviceManager.load(
+          req,
+          res,
+        )
+
+        await server.accountManager.deletePasskey(this.input.sub, this.input.credentialId)
+
+        return { json: { success: true } }
+      },
+    }),
+  )
+
+
         }
 
         // Once this endpoint is called, the request will definitely be
