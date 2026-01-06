@@ -59,7 +59,10 @@ import * as tokenHelper from './helpers/token'
 import * as usedRefreshTokenHelper from './helpers/used-refresh-token'
 import * as passkey from './helpers/passkey'
 import type { Passkey } from '@atproto/oauth-provider-api'
-import type { RegistrationResponseJSON } from '@simplewebauthn/server'
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+} from '@simplewebauthn/server'
 
 /**
  * This class' purpose is to implement the interface needed by the OAuthProvider
@@ -723,5 +726,38 @@ export class OAuthStore
 
   async deletePasskey(sub: Sub, credentialId: string): Promise<void> {
     return passkey.deletePasskey(this.db, sub, credentialId)
+  }
+
+  async registerPasskey(
+    sub: Sub,
+    credential: RegistrationResponseJSON,
+    challenge: string,
+    deviceName?: string,
+  ): Promise<{ credentialId: string; deviceName: string; createdAt: string }> {
+    const result = await passkey.verifyPasskeyRegistration(
+      this.db,
+      sub,
+      credential,
+      challenge,
+      deviceName,
+    )
+
+    return {
+      credentialId: result.did,
+      deviceName: deviceName || 'Passkey',
+      createdAt: new Date().toISOString(),
+    }
+  }
+
+  async listPasskeys(sub: Sub): Promise<Passkey[]> {
+    const passkeys = await passkey.listPasskeysByDid(this.db, sub)
+    return passkeys.map(p => ({
+      credentialId: p.credentialId,
+      deviceName: p.deviceName || 'Passkey',
+      createdAt: p.createdAt,
+      lastUsedAt: p.lastUsedAt || null,
+      backupEligible: p.backupEligible === 1,
+      backupState: p.backupState === 1,
+    }))
   }
 }
