@@ -5,6 +5,7 @@ import type {
   Account,
   ConfirmResetPasswordInput,
   InitiatePasswordResetInput,
+  PasskeySignInOutput,
   Session,
   SignInInput,
   SignUpInput,
@@ -12,6 +13,8 @@ import type {
 } from '@atproto/oauth-provider-api'
 import { Api, UnknownRequestUriError } from '../lib/api.ts'
 import { upsert } from '../lib/util.ts'
+
+export type { PasskeySignInOutput }
 
 /**
  * Any function wrapped with this helper will automatically show the error
@@ -129,6 +132,24 @@ export function useApi({
     [api, locale, upsertSession],
   )
 
+  /**
+   * Handle a successful passkey sign-in. The passkey authentication itself is
+   * done via the usePasskeyAuth hook; this function processes the result and
+   * updates the session state.
+   */
+  const doPasskeySignIn = useCallback(
+    (result: PasskeySignInOutput) => {
+      upsertSession({
+        account: result.account,
+        ephemeralToken: result.ephemeralToken,
+        consentRequired: result.consentRequired ?? true,
+        selected: true,
+        loginRequired: false,
+      })
+    },
+    [upsertSession],
+  )
+
   const doInitiatePasswordReset = useSafeCallback(
     async (
       data: Omit<InitiatePasswordResetInput, 'locale'>,
@@ -197,6 +218,7 @@ export function useApi({
     selectSub,
 
     doSignIn,
+    doPasskeySignIn,
     doInitiatePasswordReset,
     doConfirmResetPassword,
     doValidateNewHandle,

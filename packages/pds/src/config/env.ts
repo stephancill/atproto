@@ -27,6 +27,11 @@ export function readEnv() {
     // OAuth
     trustedOAuthClients: envList('PDS_OAUTH_TRUSTED_CLIENTS'),
 
+    // WebAuthn / Passkeys
+    webauthnRpId: envStr('PDS_WEBAUTHN_RP_ID'), // Relying Party ID (hostname)
+    webauthnRpName: envStr('PDS_WEBAUTHN_RP_NAME'), // Display name
+    webauthnOrigin: envStr('PDS_WEBAUTHN_ORIGIN'), // Expected origin(s)
+
     // branding
     lightColor: envStr('PDS_LIGHT_COLOR'),
     darkColor: envStr('PDS_DARK_COLOR'),

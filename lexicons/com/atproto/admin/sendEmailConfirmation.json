@@ -9,9 +9,7 @@
         "encoding": "application/json",
         "schema": {
           "type": "object",
-          "required": [
-            "did"
-          ],
+          "required": ["did"],
           "properties": {
             "did": {
               "type": "string",
@@ -25,9 +23,7 @@
         "encoding": "application/json",
         "schema": {
           "type": "object",
-          "required": [
-            "sent"
-          ],
+          "required": ["sent"],
           "properties": {
             "sent": {
               "type": "boolean"

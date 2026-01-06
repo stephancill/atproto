@@ -325,22 +325,35 @@ export class AppContext {
       },
     })
 
+    // Create OAuthStore and configure passkey support
+    const oauthStore = cfg.oauth.provider
+      ? new OAuthStore(
+          accountManager,
+          actorStore,
+          imageUrlBuilder,
+          backgroundQueue,
+          mailer,
+          sequencer,
+          plcClient,
+          plcRotationKey,
+          cfg.service.publicUrl,
+          cfg.identity.recoveryDidKey,
+        )
+      : undefined
+
+    if (oauthStore) {
+      oauthStore.setPasskeyConfig({
+        rpId: cfg.webauthn.rpId,
+        rpName: cfg.webauthn.rpName,
+        origin: cfg.webauthn.origin,
+      })
+    }
+
     const oauthProvider = cfg.oauth.provider
       ? new OAuthProvider({
           issuer: cfg.oauth.issuer,
           keyset: [await JoseKey.fromKeyLike(jwtSecretKey, undefined, 'HS256')],
-          store: new OAuthStore(
-            accountManager,
-            actorStore,
-            imageUrlBuilder,
-            backgroundQueue,
-            mailer,
-            sequencer,
-            plcClient,
-            plcRotationKey,
-            cfg.service.publicUrl,
-            cfg.identity.recoveryDidKey,
-          ),
+          store: oauthStore!,
           redis: redisScratch,
           dpopSecret: secrets.dpopSecret,
           inviteCodeRequired: cfg.invites.required,

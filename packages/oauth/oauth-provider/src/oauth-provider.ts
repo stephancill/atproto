@@ -33,7 +33,9 @@ import {
   AccountStore,
   AuthorizedClientData,
   DeviceAccount,
+  PasskeyStore,
   asAccountStore,
+  asPasskeyStore,
 } from './account/account-store.js'
 import { ClientAuth, ClientAuthLegacy } from './client/client-auth.js'
 import { ClientId } from './client/client-id.js'
@@ -250,6 +252,7 @@ export class OAuthProvider extends OAuthVerifier {
   public readonly lexiconManager: LexiconManager
   public readonly requestManager: RequestManager
   public readonly tokenManager: TokenManager
+  public readonly passkeyStore: PasskeyStore | null
 
   public constructor({
     // OAuthProviderConfig
@@ -341,6 +344,9 @@ export class OAuthProvider extends OAuthVerifier {
       this.accessTokenMode,
       tokenMaxAge,
     )
+
+    // Check if the store implements PasskeyStore for passkey support
+    this.passkeyStore = asPasskeyStore(accountStore)
   }
 
   get jwks() {

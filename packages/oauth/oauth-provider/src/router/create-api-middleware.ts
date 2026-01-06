@@ -17,6 +17,10 @@ import {
   oauthRedirectUriSchema,
   oauthResponseModeSchema,
 } from '@atproto/oauth-types'
+import type {
+  PasskeyAuthenticationResponse,
+  PasskeyRegistrationResponse,
+} from '../account/account-store.js'
 import { signInDataSchema } from '../account/sign-in-data.js'
 import { signUpInputSchema } from '../account/sign-up-input.js'
 import { DeviceId, deviceIdSchema } from '../device/device-id.js'
@@ -570,6 +574,211 @@ export function createApiMiddleware<
       },
     }),
   )
+
+  // Passkey routes (only available if the store supports passkeys)
+  const passkeyStore = server.passkeyStore
+
+  if (passkeyStore) {
+    // Check if passkeys are available for this server
+    router.use(
+      apiRoute({
+        method: 'GET',
+        endpoint: '/passkey/available',
+        schema: undefined,
+        async handler() {
+          return { json: { available: true } }
+        },
+      }),
+    )
+
+    // Get registration options (requires authenticated session)
+    router.use(
+      apiRoute({
+        method: 'POST',
+        endpoint: '/passkey/register/options',
+        schema: z
+          .object({ sub: subSchema, name: z.string().optional() })
+          .strict(),
+        async handler(req, res) {
+          const { account } = await authenticate.call(this, req, res)
+          const options = await passkeyStore.getPasskeyRegistrationOptions(
+            account.sub,
+            account.preferred_username || account.sub,
+          )
+          return { json: options }
+        },
+      }),
+    )
+
+    // Verify registration (requires authenticated session)
+    router.use(
+      apiRoute({
+        method: 'POST',
+        endpoint: '/passkey/register/verify',
+        schema: z
+          .object({
+            sub: subSchema,
+            response: z.custom<PasskeyRegistrationResponse>(),
+            name: z.string(),
+          })
+          .strict(),
+        async handler(req, res) {
+          const { account } = await authenticate.call(this, req, res)
+          const passkey = await passkeyStore.verifyPasskeyRegistration(
+            account.sub,
+            this.input.response,
+            this.input.name,
+          )
+          return { json: { passkey } }
+        },
+      }),
+    )
+
+    // Get authentication options (public - for passkey sign-in)
+    router.use(
+      apiRoute({
+        method: 'POST',
+        endpoint: '/passkey/authenticate/options',
+        schema: z.object({ username: z.string().optional() }).strict(),
+        rotateDeviceCookies: true,
+        async handler() {
+          // If username is provided, try to resolve it to a DID
+          let sub: Sub | undefined
+          if (this.input.username) {
+            try {
+              // Try to find account by username (handle or email)
+              // This is optional - if not found, we allow any discoverable credential
+              const deviceAccounts =
+                await server.accountManager.listDeviceAccounts(this.deviceId)
+              const matchingAccount = deviceAccounts.find(
+                (da) =>
+                  da.account.preferred_username === this.input.username ||
+                  da.account.email === this.input.username,
+              )
+              sub = matchingAccount?.account.sub
+            } catch {
+              // Ignore errors - we'll allow any credential
+            }
+          }
+
+          const options =
+            await passkeyStore.getPasskeyAuthenticationOptions(sub)
+          return { json: options }
+        },
+      }),
+    )
+
+    // Verify authentication (public - for passkey sign-in)
+    router.use(
+      apiRoute({
+        method: 'POST',
+        endpoint: '/passkey/authenticate/verify',
+        schema: z
+          .object({
+            sessionKey: z.string(),
+            response: z.custom<PasskeyAuthenticationResponse>(),
+            remember: z.boolean().optional(),
+          })
+          .strict(),
+        rotateDeviceCookies: true,
+        async handler() {
+          const { deviceId, requestUri } = this
+          const { remember = requestUri == null } = this.input
+
+          const { account, passkey } =
+            await passkeyStore.verifyPasskeyAuthentication(
+              this.input.sessionKey,
+              this.input.response,
+            )
+
+          if (remember) {
+            await server.accountManager.upsertDeviceAccount(
+              deviceId,
+              account.sub,
+            )
+          } else {
+            await server.accountManager.removeDeviceAccount(
+              deviceId,
+              account.sub,
+            )
+          }
+
+          const ephemeralToken = remember
+            ? undefined
+            : await server.signer.createEphemeralToken({
+                sub: account.sub,
+                deviceId,
+                requestUri,
+              })
+
+          if (requestUri) {
+            const { clientId, parameters } = await server.requestManager.get(
+              requestUri,
+              deviceId,
+            )
+
+            const { authorizedClients } =
+              await server.accountManager.getAccount(account.sub)
+
+            const json = {
+              account,
+              ephemeralToken,
+              passkey,
+              consentRequired: server.checkConsentRequired(
+                parameters,
+                authorizedClients.get(clientId),
+              ),
+            }
+
+            return { json }
+          }
+
+          return { json: { account, ephemeralToken, passkey } }
+        },
+      }),
+    )
+
+    // List passkeys (requires authenticated session)
+    router.use(
+      apiRoute({
+        method: 'GET',
+        endpoint: '/passkey/list',
+        schema: z.object({ sub: subSchema }).strict(),
+        async handler(req, res) {
+          const { account } = await authenticate.call(this, req, res)
+          const passkeys = await passkeyStore.listPasskeys(account.sub)
+          return { json: { passkeys } }
+        },
+      }),
+    )
+
+    // Delete a passkey (requires authenticated session)
+    router.use(
+      apiRoute({
+        method: 'POST',
+        endpoint: '/passkey/delete',
+        schema: z.object({ sub: subSchema, credentialId: z.string() }).strict(),
+        async handler(req, res) {
+          const { account } = await authenticate.call(this, req, res)
+
+          // Don't allow deleting the last passkey if user has no password
+          // (In this implementation, we require passwords, so this check is mainly for safety)
+          const count = await passkeyStore.getPasskeyCount(account.sub)
+          if (count <= 1) {
+            throw new InvalidRequestError(
+              'Cannot delete the last passkey. Please add another authentication method first.',
+            )
+          }
+
+          const deleted = await passkeyStore.deletePasskey(
+            account.sub,
+            this.input.credentialId,
+          )
+          return { json: { deleted } }
+        },
+      }),
+    )
+  }
 
   return router.buildMiddleware()
 

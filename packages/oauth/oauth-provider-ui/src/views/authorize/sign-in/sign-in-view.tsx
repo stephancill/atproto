@@ -5,6 +5,7 @@ import {
   LayoutTitlePage,
   LayoutTitlePageProps,
 } from '../../../components/layouts/layout-title-page.tsx'
+import type { PasskeySignInOutput } from '../../../hooks/use-passkey.ts'
 import { Override } from '../../../lib/util.ts'
 import { SignInForm, SignInFormOutput } from './sign-in-form.tsx'
 import { SignInPicker } from './sign-in-picker.tsx'
@@ -20,6 +21,7 @@ export type SignInViewProps = Override<
       credentials: SignInFormOutput,
       signal: AbortSignal,
     ) => void | PromiseLike<void>
+    onPasskeySignIn?: (result: PasskeySignInOutput) => void | PromiseLike<void>
     onSignUp?: () => void
     onForgotPassword?: (emailHint?: string) => void
     onBack?: () => void
@@ -33,6 +35,7 @@ export function SignInView({
   selectSub,
 
   onSignIn,
+  onPasskeySignIn,
   onSignUp,
   onForgotPassword,
   onBack,
@@ -70,6 +73,7 @@ export function SignInView({
       >
         <SignInForm
           onSubmit={onSignIn}
+          onPasskeySignIn={onPasskeySignIn}
           onForgotPassword={onForgotPassword}
           onBack={clearSession}
           usernameDefault={
@@ -91,6 +95,7 @@ export function SignInView({
       >
         <SignInForm
           onSubmit={onSignIn}
+          onPasskeySignIn={onPasskeySignIn}
           onForgotPassword={onForgotPassword}
           onBack={onBack}
           backLabel={backLabel}
@@ -110,6 +115,7 @@ export function SignInView({
       >
         <SignInForm
           onSubmit={onSignIn}
+          onPasskeySignIn={onPasskeySignIn}
           onForgotPassword={onForgotPassword}
           onBack={onBack}
           backLabel={backLabel}
@@ -127,6 +133,7 @@ export function SignInView({
       >
         <SignInForm
           onSubmit={onSignIn}
+          onPasskeySignIn={onPasskeySignIn}
           onForgotPassword={onForgotPassword}
           onBack={() => setShowSignInForm(false)}
         />

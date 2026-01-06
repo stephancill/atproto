@@ -128,7 +128,7 @@ export const api = {
 
   getAccountInfos: (auth: string, dids: string[]) =>
     xrpc<{ infos: AccountView[] }>(
-      `com.atproto.admin.getAccountInfos?${dids.map(d => `dids=${encodeURIComponent(d)}`).join('&')}`,
+      `com.atproto.admin.getAccountInfos?${dids.map((d) => `dids=${encodeURIComponent(d)}`).join('&')}`,
       { auth },
     ),
 
@@ -154,4 +154,3 @@ export const api = {
       auth,
     }),
 }
-

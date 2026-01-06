@@ -100,6 +100,75 @@ export type SignUpData = SignUpInput & {
   inviteCode?: InviteCode
 }
 
+// Passkey types for WebAuthn support
+export type PasskeyCredential = {
+  id: string
+  publicKey: string // base64url encoded
+  counter: number
+  transports: string[] | null
+  deviceType: 'singleDevice' | 'multiDevice' | null
+  backedUp: boolean
+  name: string
+  createdAt: string
+  lastUsedAt: string | null
+}
+
+export type PasskeyRegistrationOptions = {
+  challenge: string
+  rp: { name: string; id: string }
+  user: { id: string; name: string; displayName: string }
+  pubKeyCredParams: Array<{ type: 'public-key'; alg: number }>
+  timeout?: number
+  excludeCredentials?: Array<{
+    id: string
+    type: 'public-key'
+    transports?: string[]
+  }>
+  authenticatorSelection?: {
+    authenticatorAttachment?: 'platform' | 'cross-platform'
+    residentKey?: 'discouraged' | 'preferred' | 'required'
+    userVerification?: 'discouraged' | 'preferred' | 'required'
+  }
+  attestation?: 'none' | 'indirect' | 'direct' | 'enterprise'
+}
+
+export type PasskeyAuthenticationOptions = {
+  challenge: string
+  timeout?: number
+  rpId?: string
+  allowCredentials?: Array<{
+    id: string
+    type: 'public-key'
+    transports?: string[]
+  }>
+  userVerification?: 'discouraged' | 'preferred' | 'required'
+}
+
+export type PasskeyRegistrationResponse = {
+  id: string
+  rawId: string
+  response: {
+    clientDataJSON: string
+    attestationObject: string
+    transports?: string[]
+  }
+  clientExtensionResults: Record<string, unknown>
+  type: 'public-key'
+}
+
+export type PasskeyAuthenticationResponse = {
+  id: string
+  rawId: string
+  response: {
+    clientDataJSON: string
+    authenticatorData: string
+    signature: string
+    userHandle?: string
+  }
+  clientExtensionResults: Record<string, unknown>
+  type: 'public-key'
+}
+
 export interface AccountStore {
   /**
    * @throws {HandleUnavailableError} - To indicate that the handle is already taken
@@ -202,6 +271,89 @@ export const isAccountStore = buildInterfaceChecker<AccountStore>([
 export function asAccountStore<V>(implementation: V): V & AccountStore {
   if (!implementation || !isAccountStore(implementation)) {
     throw new Error('Invalid AccountStore implementation')
+  }
+  return implementation
+}
+
+/**
+ * Optional interface for passkey (WebAuthn) support.
+ * Implementations can provide this interface to enable passkey authentication.
+ */
+export interface PasskeyStore {
+  /**
+   * Generate registration options for creating a new passkey
+   * @param sub - The account identifier (DID)
+   * @param userName - Human-readable identifier for the account
+   */
+  getPasskeyRegistrationOptions(
+    sub: Sub,
+    userName: string,
+  ): Awaitable<PasskeyRegistrationOptions>
+
+  /**
+   * Verify and store a new passkey registration
+   * @param sub - The account identifier
+   * @param response - The WebAuthn registration response from the client
+   * @param name - User-friendly name for this passkey
+   */
+  verifyPasskeyRegistration(
+    sub: Sub,
+    response: PasskeyRegistrationResponse,
+    name: string,
+  ): Awaitable<PasskeyCredential>
+
+  /**
+   * Generate authentication options for passkey sign-in
+   * @param sub - Optional account identifier. If provided, only that user's passkeys are allowed.
+   *              If not provided, any discoverable credential can be used.
+   */
+  getPasskeyAuthenticationOptions(
+    sub?: Sub,
+  ): Awaitable<PasskeyAuthenticationOptions & { sessionKey: string }>
+
+  /**
+   * Verify a passkey authentication response
+   * @param sessionKey - The session key from getPasskeyAuthenticationOptions
+   * @param response - The WebAuthn authentication response from the client
+   * @returns The authenticated account and passkey info
+   */
+  verifyPasskeyAuthentication(
+    sessionKey: string,
+    response: PasskeyAuthenticationResponse,
+  ): Awaitable<{ account: Account; passkey: PasskeyCredential }>
+
+  /**
+   * List all passkeys for an account
+   */
+  listPasskeys(sub: Sub): Awaitable<PasskeyCredential[]>
+
+  /**
+   * Delete a passkey
+   * @returns true if the passkey was deleted, false if not found
+   */
+  deletePasskey(sub: Sub, credentialId: string): Awaitable<boolean>
+
+  /**
+   * Get the number of passkeys for an account
+   */
+  getPasskeyCount(sub: Sub): Awaitable<number>
+}
+
+export const isPasskeyStore = buildInterfaceChecker<PasskeyStore>([
+  'getPasskeyRegistrationOptions',
+  'verifyPasskeyRegistration',
+  'getPasskeyAuthenticationOptions',
+  'verifyPasskeyAuthentication',
+  'listPasskeys',
+  'deletePasskey',
+  'getPasskeyCount',
+])
+
+export function asPasskeyStore<V>(
+  implementation: V,
+): (V & PasskeyStore) | null {
+  if (!implementation || !isPasskeyStore(implementation)) {
+    return null
   }
   return implementation
 }

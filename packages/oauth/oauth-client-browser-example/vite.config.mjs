@@ -9,6 +9,13 @@ export default defineConfig({
     react({ plugins: [['@lingui/swc-plugin', {}]] }),
     tailwindcss(),
   ],
+  server: {
+    // Use a separate port for HMR to avoid WebSocket compression conflicts
+    // The RSV1 error occurs when something (proxy/extension) sends compressed frames
+    hmr: {
+      port: 24678,
+    },
+  },
   build: {
     emptyOutDir: true,
     outDir: './dist',

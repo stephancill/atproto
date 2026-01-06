@@ -1,24 +1,32 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ReactNode, useCallback, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useRef, useState } from 'react'
 import { Button } from '../../../components/forms/button.tsx'
 import { Fieldset } from '../../../components/forms/fieldset.tsx'
 import {
   FormCardAsync,
-  FormCardAsyncProps,
+  type FormCardAsyncProps,
 } from '../../../components/forms/form-card-async.tsx'
 import { InputCheckbox } from '../../../components/forms/input-checkbox.tsx'
 import { InputPassword } from '../../../components/forms/input-password.tsx'
 import { InputText } from '../../../components/forms/input-text.tsx'
 import { InputToken } from '../../../components/forms/input-token.tsx'
 import { Admonition } from '../../../components/utils/admonition.tsx'
-import { AtSymbolIcon } from '../../../components/utils/icons.tsx'
-import { AsyncActionController } from '../../../hooks/use-async-action.ts'
+import {
+  AtSymbolIcon,
+  FingerprintIcon,
+} from '../../../components/utils/icons.tsx'
+import type { AsyncActionController } from '../../../hooks/use-async-action.ts'
+import {
+  usePasskeyAvailable,
+  usePasskeyAuth,
+} from '../../../hooks/use-passkey.ts'
+import type { PasskeySignInOutput } from '../../../hooks/use-passkey.ts'
 import {
   InvalidCredentialsError,
   SecondAuthenticationFactorRequiredError,
 } from '../../../lib/api.ts'
 import { mergeRefs } from '../../../lib/ref.ts'
-import { Override } from '../../../lib/util.ts'
+import type { Override } from '../../../lib/util.ts'
 
 export type SignInFormOutput = {
   username: string
@@ -40,6 +48,7 @@ export type SignInFormProps = Override<
       credentials: SignInFormOutput,
       signal: AbortSignal,
     ) => void | PromiseLike<void>
+    onPasskeySignIn?: (result: PasskeySignInOutput) => void | PromiseLike<void>
   }
 >
 
@@ -52,6 +61,7 @@ export function SignInForm({
   onBack,
   backLabel,
   onForgotPassword,
+  onPasskeySignIn,
 
   // FormCardAsync
   ref,
@@ -73,15 +83,46 @@ export function SignInForm({
 
   const formRef = useRef<AsyncActionController>(null)
 
+  // Passkey support
+  const { available: passkeyAvailable, loading: passkeyLoading } =
+    usePasskeyAvailable()
+  const {
+    authenticate: authenticatePasskey,
+    isAuthenticating: passkeyAuthenticating,
+    error: passkeyError,
+    reset: resetPasskeyError,
+  } = usePasskeyAuth()
+
+  const handlePasskeySignIn = useCallback(async () => {
+    if (!onPasskeySignIn) return
+    resetPasskeyError()
+    try {
+      const result = await authenticatePasskey(
+        usernameReadonly ? usernameDefault : undefined,
+        remember,
+      )
+      await onPasskeySignIn(result)
+    } catch {
+      // Error is handled by usePasskeyAuth hook
+    }
+  }, [
+    onPasskeySignIn,
+    authenticatePasskey,
+    usernameReadonly,
+    usernameDefault,
+    remember,
+    resetPasskeyError,
+  ])
+
   const clearSecondFactor = useCallback(() => {
     setOtp(null)
     setSecondFactor(null)
-  }, [setOtp, setSecondFactor])
+  }, [])
 
   const resetState = useCallback(() => {
     clearSecondFactor()
     formRef.current?.reset()
-  }, [clearSecondFactor, formRef])
+  }, [clearSecondFactor])
 
   const doSubmit = useCallback(
     async (signal: AbortSignal) => {
@@ -120,7 +161,15 @@ export function SignInForm({
         throw err
       }
     },
-    [username, password, remember, secondFactor, otp, onSubmit],
+    [
+      username,
+      password,
+      remember,
+      secondFactor,
+      otp,
+      onSubmit,
+      clearSecondFactor,
+    ],
   )
 
   return (
@@ -196,6 +245,38 @@ export function SignInForm({
           required
         />
       </Fieldset>
+
+      {/* Passkey sign-in button */}
+      {onPasskeySignIn && !passkeyLoading && passkeyAvailable && (
+        <div className="flex flex-col gap-2">
+          <div className="relative flex items-center">
+            <div className="flex-grow border-t border-slate-300 dark:border-slate-700" />
+            <span className="mx-4 flex-shrink text-sm text-slate-500 dark:text-slate-400">
+              <Trans>or</Trans>
+            </span>
+            <div className="flex-grow border-t border-slate-300 dark:border-slate-700" />
+          </div>
+          <Button
+            type="button"
+            color="grey"
+            className="flex w-full items-center justify-center gap-2"
+            onClick={handlePasskeySignIn}
+            disabled={loading || passkeyAuthenticating}
+          >
+            <FingerprintIcon className="h-5 w-5" />
+            {passkeyAuthenticating ? (
+              <Trans>Authenticating...</Trans>
+            ) : (
+              <Trans>Sign in with Passkey</Trans>
+            )}
+          </Button>
+          {passkeyError && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {passkeyError.message}
+            </p>
+          )}
+        </div>
+      )}
 
       <Admonition role="alert" title={<Trans>Warning</Trans>}>
         <Trans>

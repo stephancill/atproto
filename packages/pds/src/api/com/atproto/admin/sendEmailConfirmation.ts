@@ -50,4 +50,3 @@ export default function (server: Server, ctx: AppContext) {
     },
   })
 }
-

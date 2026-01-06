@@ -1,13 +1,15 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { CustomizationData, Session } from '@atproto/oauth-provider-api'
 import { OAuthPromptMode } from '@atproto/oauth-types'
 import {
   LayoutTitlePage,
   LayoutTitlePageProps,
 } from '../../components/layouts/layout-title-page.tsx'
+import { PasskeyRegisterPrompt } from '../../components/passkey/passkey-register-prompt.tsx'
 import { useApi } from '../../hooks/use-api.ts'
 import { useBoundDispatch } from '../../hooks/use-bound-dispatch.ts'
+import { usePasskeyAvailable } from '../../hooks/use-passkey.ts'
 import type { AuthorizeData } from '../../hydration-data'
 import { Override } from '../../lib/util.ts'
 import { ConsentView } from './consent/consent-view.tsx'
@@ -30,6 +32,7 @@ enum View {
   SignUp,
   SignIn,
   ResetPassword,
+  PasskeySetup,
   Consent,
   Done,
 }
@@ -82,7 +85,14 @@ export function AuthorizeView({
   const showSignIn = useBoundDispatch(setView, View.SignIn)
   const showResetPassword = useBoundDispatch(setView, View.ResetPassword)
   const showSignUp = useBoundDispatch(setView, View.SignUp)
+  const showPasskeySetup = useBoundDispatch(setView, View.PasskeySetup)
   const showConsent = useBoundDispatch(setView, View.Consent)
+
+  // Track whether passkey enrollment was shown (to avoid showing it twice)
+  const [passkeyEnrollmentShown, setPasskeyEnrollmentShown] = useState(false)
+  // Track whether the user signed in via passkey (to skip enrollment prompt)
+  const [signedInViaPasskey, setSignedInViaPasskey] = useState(false)
+  const { available: passkeyAvailable } = usePasskeyAvailable()
 
   const [resetPasswordHint, setResetPasswordHint] = useState<
     string | undefined
@@ -94,6 +104,7 @@ export function AuthorizeView({
     doValidateNewHandle,
     doSignUp,
     doSignIn,
+    doPasskeySignIn: doPasskeySignInBase,
     doInitiatePasswordReset,
     doConfirmResetPassword,
     doConsent,
@@ -103,6 +114,15 @@ export function AuthorizeView({
     onRedirected: showDone,
   })
 
+  // Wrap passkey sign-in to track that user signed in via passkey
+  const doPasskeySignIn = useCallback(
+    (result: Parameters<typeof doPasskeySignInBase>[0]) => {
+      setSignedInViaPasskey(true)
+      doPasskeySignInBase(result)
+    },
+    [doPasskeySignInBase],
+  )
+
   const homeView = !canSignUp || sessions.length ? View.SignIn : View.Welcome
   const showHome = useBoundDispatch(setView, homeView)
   const showSignUpIfAllowed = canSignUp ? showSignUp : undefined
@@ -111,10 +131,34 @@ export function AuthorizeView({
   const session = sessions.find((s) => s.selected && !s.loginRequired)
   useEffect(() => {
     if (session) {
-      if (session.consentRequired) showConsent()
-      else doConsent(session.account.sub)
+      // Show passkey enrollment prompt if:
+      // - passkeys are available
+      // - user hasn't seen the prompt yet
+      // - user signed in with password (not passkey - they already have one!)
+      // - consent is required
+      const shouldShowPasskeySetup =
+        passkeyAvailable &&
+        !passkeyEnrollmentShown &&
+        !signedInViaPasskey &&
+        session.consentRequired
+
+      if (shouldShowPasskeySetup) {
+        showPasskeySetup()
+      } else if (session.consentRequired) {
+        showConsent()
+      } else {
+        doConsent(session.account.sub)
+      }
     }
-  }, [session, doConsent, showConsent])
+  }, [
+    session,
+    doConsent,
+    showConsent,
+    showPasskeySetup,
+    passkeyAvailable,
+    passkeyEnrollmentShown,
+    signedInViaPasskey,
+  ])
 
   // Fool-proofing
   useEffect(() => {
@@ -122,6 +166,9 @@ export function AuthorizeView({
   }, [view, homeView, !canSignUp])
   useEffect(() => {
     if (view === View.Consent && !session) setView(homeView)
+  }, [view, homeView, !session])
+  useEffect(() => {
+    if (view === View.PasskeySetup && !session) setView(homeView)
   }, [view, homeView, !session])
   useEffect(() => {
     if (view === View.Welcome && homeView !== View.Welcome) setView(homeView)
@@ -171,6 +218,7 @@ export function AuthorizeView({
         sessions={sessions}
         selectSub={selectSub}
         onSignIn={doSignIn}
+        onPasskeySignIn={doPasskeySignIn}
         onSignUp={showSignUpIfAllowed}
         onBack={homeView === View.SignIn ? doReject : showHome}
         backLabel={homeView === View.SignIn ? t`Cancel` : undefined}
@@ -179,6 +227,37 @@ export function AuthorizeView({
           setResetPasswordHint(email)
         }}
       />
+    )
+  }
+
+  if (view === View.PasskeySetup) {
+    // TypeSafety: should never be null here
+    if (!session) return null
+
+    return (
+      <LayoutTitlePage
+        {...props}
+        title={t`Secure your account`}
+        subtitle={
+          <Trans>
+            Add a passkey for faster and more secure sign-ins
+          </Trans>
+        }
+      >
+        <PasskeyRegisterPrompt
+          sub={session.account.sub}
+          defaultName={session.account.preferred_username || session.account.sub}
+          bearer={session.ephemeralToken}
+          onRegisterSuccess={() => {
+            setPasskeyEnrollmentShown(true)
+            showConsent()
+          }}
+          onSkip={() => {
+            setPasskeyEnrollmentShown(true)
+            showConsent()
+          }}
+        />
+      </LayoutTitlePage>
     )
   }
 

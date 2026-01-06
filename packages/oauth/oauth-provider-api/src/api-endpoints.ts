@@ -91,6 +91,41 @@ export type ApiEndpoints = {
     input: RejectInput
     output: { url: string }
   }
+  // Passkey endpoints
+  '/passkey/available': {
+    method: 'GET'
+    output: { available: boolean }
+  }
+  '/passkey/register/options': {
+    method: 'POST'
+    input: PasskeyRegisterOptionsInput
+    output: PasskeyRegistrationOptions
+  }
+  '/passkey/register/verify': {
+    method: 'POST'
+    input: PasskeyRegisterVerifyInput
+    output: { passkey: PasskeyCredential }
+  }
+  '/passkey/authenticate/options': {
+    method: 'POST'
+    input: PasskeyAuthenticateOptionsInput
+    output: PasskeyAuthenticationOptions & { sessionKey: string }
+  }
+  '/passkey/authenticate/verify': {
+    method: 'POST'
+    input: PasskeyAuthenticateVerifyInput
+    output: PasskeySignInOutput
+  }
+  '/passkey/list': {
+    method: 'GET'
+    params: { sub: string }
+    output: { passkeys: PasskeyCredential[] }
+  }
+  '/passkey/delete': {
+    method: 'POST'
+    input: PasskeyDeleteInput
+    output: { deleted: boolean }
+  }
 }
 
 /**
@@ -205,4 +240,106 @@ export type ActiveOAuthSession = {
   clientMetadata?: OAuthClientMetadata
 
   scope?: string
+}
+
+// Passkey types
+export type PasskeyCredential = {
+  id: string
+  publicKey: string
+  counter: number
+  transports: string[] | null
+  deviceType: 'singleDevice' | 'multiDevice' | null
+  backedUp: boolean
+  name: string
+  createdAt: string
+  lastUsedAt: string | null
+}
+
+export type PasskeyRegistrationOptions = {
+  challenge: string
+  rp: { name: string; id: string }
+  user: { id: string; name: string; displayName: string }
+  pubKeyCredParams: Array<{ type: 'public-key'; alg: number }>
+  timeout?: number
+  excludeCredentials?: Array<{
+    id: string
+    type: 'public-key'
+    transports?: string[]
+  }>
+  authenticatorSelection?: {
+    authenticatorAttachment?: 'platform' | 'cross-platform'
+    residentKey?: 'discouraged' | 'preferred' | 'required'
+    userVerification?: 'discouraged' | 'preferred' | 'required'
+  }
+  attestation?: 'none' | 'indirect' | 'direct' | 'enterprise'
+}
+
+export type PasskeyAuthenticationOptions = {
+  challenge: string
+  timeout?: number
+  rpId?: string
+  allowCredentials?: Array<{
+    id: string
+    type: 'public-key'
+    transports?: string[]
+  }>
+  userVerification?: 'discouraged' | 'preferred' | 'required'
+}
+
+export type PasskeyRegistrationResponse = {
+  id: string
+  rawId: string
+  response: {
+    clientDataJSON: string
+    attestationObject: string
+    transports?: string[]
+  }
+  clientExtensionResults: Record<string, unknown>
+  type: 'public-key'
+}
+
+export type PasskeyAuthenticationResponse = {
+  id: string
+  rawId: string
+  response: {
+    clientDataJSON: string
+    authenticatorData: string
+    signature: string
+    userHandle?: string
+  }
+  clientExtensionResults: Record<string, unknown>
+  type: 'public-key'
+}
+
+export type PasskeyRegisterOptionsInput = {
+  sub: string
+  name?: string
+}
+
+export type PasskeyRegisterVerifyInput = {
+  sub: string
+  response: PasskeyRegistrationResponse
+  name: string
+}
+
+export type PasskeyAuthenticateOptionsInput = {
+  username?: string
+}
+
+export type PasskeyAuthenticateVerifyInput = {
+  sessionKey: string
+  response: PasskeyAuthenticationResponse
+  remember?: boolean
+}
+
+export type PasskeySignInOutput = {
+  account: Account
+  ephemeralToken?: EphemeralToken
+  passkey: PasskeyCredential
+  consentRequired?: boolean
+}
+
+export type PasskeyDeleteInput = {
+  sub: string
+  credentialId: string
 }

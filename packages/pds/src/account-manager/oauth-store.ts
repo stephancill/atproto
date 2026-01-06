@@ -55,6 +55,7 @@ import * as authRequestHelper from './helpers/authorization-request'
 import * as authorizedClientHelper from './helpers/authorized-client'
 import * as deviceHelper from './helpers/device'
 import * as lexiconHelper from './helpers/lexicon'
+import * as passkey from './helpers/passkey'
 import * as tokenHelper from './helpers/token'
 import * as usedRefreshTokenHelper from './helpers/used-refresh-token'
 
@@ -627,5 +628,107 @@ export class OAuthStore
     }
 
     return account
+  }
+
+  // Passkey methods
+  private passkeyConfig: passkey.PasskeyConfig | null = null
+
+  setPasskeyConfig(config: passkey.PasskeyConfig) {
+    this.passkeyConfig = config
+  }
+
+  private getPasskeyConfig(): passkey.PasskeyConfig {
+    if (!this.passkeyConfig) {
+      throw new Error('Passkey configuration not set')
+    }
+    return this.passkeyConfig
+  }
+
+  async getPasskeyRegistrationOptions(
+    did: string,
+    userName: string,
+  ): Promise<passkey.PublicKeyCredentialCreationOptionsJSON> {
+    const account = await this.accountManager.getAccount(did, {
+      includeDeactivated: false,
+      includeTakenDown: false,
+    })
+    if (!account) {
+      throw new InvalidRequestError('Account not found')
+    }
+
+    return passkey.generatePasskeyRegistrationOptions(
+      this.db,
+      this.getPasskeyConfig(),
+      did,
+      account.handle || did,
+      userName,
+    )
+  }
+
+  async verifyPasskeyRegistration(
+    did: string,
+    response: passkey.RegistrationResponseJSON,
+    name: string,
+  ): Promise<passkey.PasskeyCredential> {
+    return passkey.verifyPasskeyRegistration(
+      this.db,
+      this.getPasskeyConfig(),
+      did,
+      response,
+      name,
+    )
+  }
+
+  async getPasskeyAuthenticationOptions(
+    did?: string,
+  ): Promise<
+    passkey.PublicKeyCredentialRequestOptionsJSON & { sessionKey: string }
+  > {
+    return passkey.generatePasskeyAuthenticationOptions(
+      this.db,
+      this.getPasskeyConfig(),
+      did,
+    )
+  }
+
+  async verifyPasskeyAuthentication(
+    sessionKey: string,
+    response: passkey.AuthenticationResponseJSON,
+  ): Promise<{ account: Account; passkey: passkey.PasskeyCredential }> {
+    const { did, passkey: passkeyData } =
+      await passkey.verifyPasskeyAuthentication(
+        this.db,
+        this.getPasskeyConfig(),
+        sessionKey,
+        response,
+      )
+
+    // Build the account object
+    const { account } = await this.getAccount(did)
+
+    return { account, passkey: passkeyData }
+  }
+
+  async listPasskeys(did: string): Promise<passkey.PasskeyCredential[]> {
+    const passkeys = await passkey.getPasskeysByDid(this.db, did)
+    return passkeys.map((pk) => ({
+      id: pk.id,
+      publicKey: pk.publicKey,
+      counter: pk.counter,
+      transports: pk.transports ? JSON.parse(pk.transports) : null,
+      deviceType: pk.deviceType as passkey.CredentialDeviceType | null,
+      backedUp: pk.backedUp === 1,
+      name: pk.name,
+      createdAt: pk.createdAt,
+      lastUsedAt: pk.lastUsedAt,
+    }))
+  }
+
+  async deletePasskey(did: string, credentialId: string): Promise<boolean> {
+    return passkey.deletePasskey(this.db, did, credentialId)
+  }
+
+  async getPasskeyCount(did: string): Promise<number> {
+    return passkey.getPasskeyCount(this.db, did)
   }
 }

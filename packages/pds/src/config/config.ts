@@ -321,6 +321,14 @@ export const envToCfg = (env: ServerEnvironment): ServerConfig => {
         },
       }
 
+  // WebAuthn / Passkey configuration
+  // Defaults to using the service hostname and public URL
+  const webauthnCfg: ServerConfig['webauthn'] = {
+    rpId: env.webauthnRpId ?? hostname,
+    rpName: env.webauthnRpName ?? env.serviceName ?? `${hostname} PDS`,
+    origin: env.webauthnOrigin ?? publicUrl,
+  }
+
   const lexiconCfg: LexiconResolverConfig = {}
 
   if (env.lexiconDidAuthority != null) {
@@ -349,6 +357,7 @@ export const envToCfg = (env: ServerEnvironment): ServerConfig => {
     lexicon: lexiconCfg,
     proxy: proxyCfg,
     oauth: oauthCfg,
+    webauthn: webauthnCfg,
   }
 }
 
@@ -373,6 +382,7 @@ export type ServerConfig = {
   proxy: ProxyConfig
   oauth: OAuthConfig
   lexicon: LexiconResolverConfig
+  webauthn: WebAuthnConfig
 }
 
 export type ServiceConfig = {
@@ -523,4 +533,10 @@ export type ModServiceConfig = {
 export type ReportServiceConfig = {
   url: string
   did: string
+}
+
+export type WebAuthnConfig = {
+  rpId: string // Relying Party ID (hostname)
+  rpName: string // Display name
+  origin: string // Expected origin for credential verification
 }

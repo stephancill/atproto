@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@atproto-labs/fetch-node": "workspace:*",
+    "@simplewebauthn/server": "^11.0.0",
     "@atproto-labs/simple-store": "workspace:*",
     "@atproto-labs/simple-store-memory": "workspace:*",
     "@atproto-labs/simple-store-redis": "workspace:*",

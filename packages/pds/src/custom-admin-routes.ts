@@ -6,12 +6,13 @@ import { AppContext } from './context'
 export const createRouter = (ctx: AppContext): Router => {
   const router = Router()
 
-  router.use(express.json())
-
   // POST /xrpc/com.atproto.admin.confirmAccountEmail
   // Manually confirm an account's email address
+  // Note: express.json() middleware is only applied to this specific route
+  // to avoid consuming request bodies for other routes that may be proxied
   router.post(
     '/xrpc/com.atproto.admin.confirmAccountEmail',
+    express.json(),
     async (req, res) => {
       try {
         // Verify admin auth
@@ -68,4 +69,3 @@ export const createRouter = (ctx: AppContext): Router => {
 
   return router
 }
-
