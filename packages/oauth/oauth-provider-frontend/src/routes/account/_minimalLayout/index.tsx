@@ -118,9 +118,16 @@ export function SelectorScreen({
 
             <InlineLink
               to="/account/sign-in"
-              className="text-text-light inline-block w-full pt-2 text-center text-sm"
+              className="text-text-light inline-block w-full text-center text-sm"
             >
-              <Trans>Sign in with another account</Trans>
+              <Trans>&larr; Back to accounts</Trans>
+            </InlineLink>
+            <InlineLink
+              to="/account/$sub"
+              params={{ sub: 'me' }}
+              className="text-text-light inline-block w-full text-center text-sm"
+            >
+              <Trans>Passkeys</Trans>
             </InlineLink>
           </div>
         </div>

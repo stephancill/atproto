@@ -18,6 +18,8 @@ import { useSignInMutation } from '#/data/useSignInMutation'
 import { format2FACode } from '#/util/format2FACode'
 import { wait } from '#/util/wait'
 import { normalizeAndEnsureValidHandle } from '@atproto/syntax'
+import { PasskeyButton } from '#/components/PasskeyButton'
+import { PasskeyRegisterButton } from '#/components/PasskeyRegisterButton'
 
 export const Route = createFileRoute('/account/_minimalLayout/sign-in')({
   component: RouteComponent,
@@ -40,18 +42,18 @@ function RouteComponent() {
         }}
       >
         <LoginForm />
-      </div>
 
-      {sessions.length > 0 && (
-        <div className="flex flex-row justify-center pt-4">
-          <InlineLink
-            to="/account"
-            className="text-text-light inline-block w-full text-center text-sm"
-          >
-            <Trans>&larr; Back to accounts</Trans>
-          </InlineLink>
-        </div>
-      )}
+        {sessions.length > 0 && (
+          <div className="flex flex-row justify-center pt-4">
+            <InlineLink
+              to="/account"
+              className="text-text-light inline-block w-full text-center text-sm"
+            >
+              <Trans>&larr; Back to accounts</Trans>
+            </InlineLink>
+          </div>
+        )}
+      </div>
     </>
   )
 }
@@ -60,6 +62,7 @@ function LoginForm() {
   const { _ } = useLingui()
   const [showCode, setShowCode] = useState(false)
   const [error, setError] = useState('')
+  const [authMethod, setAuthMethod] = useState<'password' | 'passkey'>('password')
   const { mutateAsync: signIn } = useSignInMutation()
   const navigate = useNavigate({ from: Route.fullPath })
 
@@ -131,127 +134,181 @@ function LoginForm() {
   })
 
   return (
-    <div className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        form.handleSubmit()
+      }}
+    >
       <h1 className="text-custom-primary text-xl font-bold">
         <Trans>Sign in</Trans>
       </h1>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          form.handleSubmit()
-        }}
-      >
-        <Form.Fieldset label={_(msg`Credentials`)}>
-          <form.Field
-            name="identifier"
-            children={(field) => {
-              return (
-                <Form.Item>
-                  <Form.Label name={field.name}>
-                    <Trans>Identifier</Trans>
-                  </Form.Label>
-                  <Form.Text
-                    name={field.name}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    autoComplete="username"
-                    spellCheck="false"
-                    type="text"
-                    value={field.state.value}
-                    placeholder={_(msg`@handle or email`)}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  <Form.Errors errors={field.state.meta.errors} />
-                </Form.Item>
-              )
-            }}
-          />
-          <form.Field
-            name="password"
-            children={(field) => {
-              return (
-                <Form.Item>
-                  <Form.Label name={field.name}>
-                    <Trans>Password</Trans>
-                  </Form.Label>
-                  <Form.Text
-                    name={field.name}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    autoComplete="current-password"
-                    spellCheck="false"
-                    type="password"
-                    value={field.state.value}
-                    placeholder={_(msg`Password`)}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  <Form.Errors errors={field.state.meta.errors} />
-                </Form.Item>
-              )
-            }}
-          />
 
-          {showCode && (
+      <div className="space-y-4">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setAuthMethod('password')}
+            className={clsx(
+              'flex-1 px-4 py-2 rounded-md border font-medium',
+              authMethod === 'password'
+                ? 'bg-contrast-100 dark:bg-contrast-900 border-custom-primary'
+                : 'border-transparent hover:bg-contrast-50 dark:hover:bg-contrast-800',
+            )}
+          >
+            Password
+          </button>
+          <button
+            type="button"
+            onClick={() => setAuthMethod('passkey')}
+            className={clsx(
+              'flex-1 px-4 py-2 rounded-md border font-medium',
+              authMethod === 'passkey'
+                ? 'bg-contrast-100 dark:bg-contrast-900 border-custom-primary'
+                : 'border-transparent hover:bg-contrast-50 dark:hover:bg-contrast-800',
+            )}
+          >
+            Passkey
+          </button>
+        </div>
+
+        {authMethod === 'password' ? (
+          <Form.Fieldset label={_(msg`Credentials`)}>
             <form.Field
-              name="code"
+              name="identifier"
               children={(field) => {
                 return (
                   <Form.Item>
                     <Form.Label name={field.name}>
-                      <Trans>Code</Trans>
+                      <Trans>Identifier</Trans>
                     </Form.Label>
                     <Form.Text
-                      autoComplete="one-time-code"
-                      autoCapitalize="characters"
-                      autoCorrect="off"
-                      spellCheck="false"
                       name={field.name}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      autoComplete="username"
+                      spellCheck="false"
+                      type="text"
                       value={field.state.value}
-                      placeholder={_(msg`XXXXX-XXXXX`)}
+                      placeholder={_(msg`@handle or email`)}
                       onBlur={field.handleBlur}
-                      onChange={(e) => {
-                        field.handleChange(format2FACode(e.target.value))
-                      }}
+                      onChange={(e) => field.handleChange(e.target.value)}
                     />
+                    <Form.Errors errors={field.state.meta.errors} />
                   </Form.Item>
                 )
               }}
             />
-          )}
-
-          {error && (
-            <ul>
-              <Form.Error>{error}</Form.Error>
-            </ul>
-          )}
-
-          <div className="align-center space-y-3 pt-2">
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting]}
-              children={([canSubmit, isSubmitting]) => (
-                <Button
-                  className="w-full"
-                  size="lg"
-                  type="submit"
-                  disabled={!canSubmit || isSubmitting}
-                >
-                  <Trans>Sign in</Trans>
-                </Button>
-              )}
+            <form.Field
+              name="password"
+              children={(field) => {
+                return (
+                  <Form.Item>
+                    <Form.Label name={field.name}>
+                      <Trans>Password</Trans>
+                    </Form.Label>
+                    <Form.Text
+                      name={field.name}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      autoComplete="current-password"
+                      spellCheck="false"
+                      type="password"
+                      value={field.state.value}
+                      placeholder={_(msg`Password`)}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    <Form.Errors errors={field.state.meta.errors} />
+                  </Form.Item>
+                )
+              }}
             />
-
-            <InlineLink
-              to="/account/reset-password"
-              className="text-text-light inline-block w-full text-center text-sm"
-            >
-              <Trans>Forgot password?</Trans>
-            </InlineLink>
+            {showCode && (
+              <form.Field
+                name="code"
+                children={(field) => {
+                  return (
+                    <Form.Item>
+                      <Form.Label name={field.name}>
+                        <Trans>Code</Trans>
+                      </Form.Label>
+                      <Form.Text
+                        autoComplete="one-time-code"
+                        autoCapitalize="characters"
+                        autoCorrect="off"
+                        spellCheck="false"
+                        name={field.name}
+                        value={field.state.value}
+                        placeholder={_(msg`XXXXX-XXXXX`)}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(format2FACode(e.target.value))
+                        }}
+                      />
+                      <Form.Errors errors={field.state.meta.errors} />
+                    </Form.Item>
+                  )
+                }}
+              />
+            )}
+          </Form.Fieldset>
+        ) : (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <p className="text-sm">
+                Use your passkey to sign in without a password.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <PasskeyRegisterButton
+                username={form.state.value.identifier}
+                disabled={!form.state.value.identifier}
+                onSuccess={() => {
+                  navigate({ to: '/account' })
+                }}
+              />
+              <PasskeyButton
+                username={form.state.value.identifier}
+                disabled={!form.state.value.identifier}
+                onSuccess={() => {
+                  navigate({ to: '/account' })
+                }}
+              />
+            </div>
           </div>
-        </Form.Fieldset>
-      </form>
-    </div>
+        )}
+
+        {error && (
+          <ul>
+            <Form.Error>{error}</Form.Error>
+          </ul>
+        )}
+
+        <div className="align-center space-y-3 pt-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <Button
+                className="w-full"
+                size="lg"
+                type="submit"
+                disabled={!canSubmit || isSubmitting}
+              >
+                <Trans>Sign in</Trans>
+              </Button>
+            )}
+          />
+        </div>
+
+        <InlineLink
+          to="/account/reset-password"
+          className="text-text-light inline-block w-full text-center text-sm"
+        >
+          <Trans>Forgot password?</Trans>
+        </InlineLink>
+      </div>
+    </form>
   )
 }
